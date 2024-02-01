@@ -18,7 +18,7 @@ export SONAR_SCANNER_VERSION=$(echo 5.0.1.3006 | tr -d 'v')
 #renovate: datasource=github-tags depName=hashicorp/terraform
 export TF_VERSION=$(echo v1.7.1 | tr -d 'v')
 #renovate: datasource=github-tags depName=suzuki-shunsuke/tfcmt
-export TFCMT_VERSION=$(echo v3.4.2 | tr -d 'v')
+export TFCMT_VERSION=$(echo v4.9.0 | tr -d 'v')
 #renovate: datasource=github-tags depName=tfutils/tfenv
 export TFENV_VERSION=$(echo v3.0.0 | tr -d 'v')
 #renovate: datasource=github-tags depName=zaproxy/zaproxy
