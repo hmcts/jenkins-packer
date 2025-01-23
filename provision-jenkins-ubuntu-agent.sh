@@ -185,9 +185,10 @@ chmod +x /usr/local/bin/kubectl
 python3 -m venv /home/packer/venv
 source /home/packer/venv/bin/activate
 
+pip3 install --upgrade pip setuptools wheel
 pip3 install "cython<3.0.0" wheel
 pip3 install "pyyaml==5.4.1" --no-build-isolation
-pip3 install --upgrade docker-compose pip pip-check pyopenssl virtualenv
+pip3 install docker-compose pip-check pyopenssl virtualenv
 
 deactivate
 
