@@ -111,6 +111,7 @@ apt install -y \
   python3.10-dev \
   python3-pip \
   python3-testresources \
+  python3-setuptools \
   python3-venv \
   lsb-release \
   openjdk-17-jdk \
@@ -186,7 +187,7 @@ source /home/packer/venv/bin/activate
 
 pip3 install "cython<3.0.0" wheel
 pip3 install "pyyaml==5.4.1" --no-build-isolation
-pip3 install --upgrade docker-compose pip pip-check pyopenssl setuptools virtualenv
+pip3 install --upgrade docker-compose pip pip-check pyopenssl virtualenv
 
 deactivate
 
