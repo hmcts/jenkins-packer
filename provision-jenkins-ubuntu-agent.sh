@@ -111,6 +111,7 @@ apt install -y \
   python3.10-dev \
   python3-pip \
   python3-testresources \
+  python3-venv \
   lsb-release \
   openjdk-17-jdk \
   git \
@@ -180,7 +181,7 @@ mv linux-${ARCHITECTURE}/helm /usr/local/bin/helm
 rm -rf linux-${ARCHITECTURE}
 chmod +x /usr/local/bin/kubectl
 
-python3.10 -m venv venv
+python3 -m venv venv
 source venv/bin/activate
 
 pip3 install --upgrade docker-compose pip pip-check pyopenssl setuptools virtualenv
