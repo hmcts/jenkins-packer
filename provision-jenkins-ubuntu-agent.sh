@@ -184,7 +184,7 @@ python3.10 -m venv /home/packer/venv
 source /home/packer/venv/bin/activate
 
 pip install --upgrade pip setuptools wheel
-pip install docker-compose pip-check pyopenssl virtualenv
+pip install Cython docker-compose pip-check pyopenssl virtualenv
 
 deactivate
 
