@@ -54,7 +54,7 @@ stages:
           matrix:
             Ubuntu-amd64:
               image_name: "jenkins-ubuntu"
-              image_sku: 20_04-lts
+              image_sku: server
               templatePath: jenkins-agent-ubuntu.pkr.hcl
               vm_size: "Standard_D4ds_v5"
         timeoutInMinutes: "120"
