@@ -111,7 +111,6 @@ apt install -y \
   python3.10-dev \
   python3-pip \
   python3-testresources \
-  python2 \
   lsb-release \
   openjdk-17-jdk \
   git \
