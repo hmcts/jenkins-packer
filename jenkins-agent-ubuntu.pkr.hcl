@@ -71,7 +71,7 @@ variable "image_publisher" {
 
 variable "image_sku" {
   type = string
-  default = "server"
+  default = "server-gen1"
 }
 
 variable "image_name" {
@@ -99,7 +99,6 @@ source "azure-arm" "pr-build-and-publish" {
   image_publisher                   = var.image_publisher
   image_offer                       = var.image_offer
   image_sku                         = var.image_sku
-  hyper_v_generation                = "2"
   location                          = var.azure_location
   os_type                           = var.os_type
   ssh_pty                           = "true"
