@@ -99,6 +99,7 @@ source "azure-arm" "pr-build-and-publish" {
   image_publisher                   = var.image_publisher
   image_offer                       = var.image_offer
   image_sku                         = var.image_sku
+  image_hyperv_generation           = "V2"
   location                          = var.azure_location
   os_type                           = var.os_type
   ssh_pty                           = "true"
