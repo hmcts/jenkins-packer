@@ -71,7 +71,7 @@ variable "image_publisher" {
 
 variable "image_sku" {
   type = string
-  default = "server-gen1"
+  default = "server"
 }
 
 variable "image_name" {
