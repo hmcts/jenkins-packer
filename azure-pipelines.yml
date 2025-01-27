@@ -39,7 +39,7 @@ stages:
               scriptType: bash
               scriptLocation: inlineScript
               inlineScript: |
-                AZURE_IMAGE_VERSION=$(az sig image-version list --gallery-image-definition jenkins-ubuntu --gallery-name hmcts --resource-group hmcts-image-gallery-rg --query '[].{name:name}' -o tsv | sort -V | tail -n1)
+                AZURE_IMAGE_VERSION=$(az sig image-version list --gallery-image-definition jenkins-ubuntu-v2 --gallery-name hmcts --resource-group hmcts-image-gallery-rg --query '[].{name:name}' -o tsv | sort -V | tail -n1)
                 IFS=. read -r major minor patch <<<"$AZURE_IMAGE_VERSION"
                 ((patch++))
                 printf -v AZURE_IMAGE_VERSION '%d.%d.%d' "$major" "$minor" "$((patch))"
@@ -53,7 +53,7 @@ stages:
         strategy:
           matrix:
             Ubuntu-amd64:
-              image_name: "jenkins-ubuntu"
+              image_name: "jenkins-ubuntu-v2"
               image_sku: server
               templatePath: jenkins-agent-ubuntu.pkr.hcl
               vm_size: "Standard_D4ds_v5"
