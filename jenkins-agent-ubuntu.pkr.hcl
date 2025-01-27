@@ -76,7 +76,7 @@ variable "image_sku" {
 
 variable "image_name" {
   type = string
-  default = "jenkins-ubuntu"
+  default = "jenkins-ubuntu-v2"
 }
 
 variable "os_type" {
