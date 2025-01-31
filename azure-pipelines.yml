@@ -145,9 +145,7 @@ stages:
               scriptLocation: inlineScript
               inlineScript: |
                 KEEP_IMAGE_LABEL=$(curl -s -H "Authorization Bearer $(github-management-api-token)" \
-                https://api.github.com/repos/hmcts/jenkins-packer/issues/$(System.PullRequest.PullRequestNumber)/labels | jq -r '.[] | select(.name == "keep-image")')
-
-                echo $KEEP_IMAGE_LABEL
+                https://api.github.com/repos/hmcts/jenkins-packer/issues/$(System.PullRequest.PullRequestNumber)/labels | jq -r '.[] | select(.name == "keep_image")')
 
                 if [ -z "$KEEP_IMAGE_LABEL" ]; then
                   echo "No keep-image label found, deleting image"
