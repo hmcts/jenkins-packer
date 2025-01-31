@@ -100,21 +100,21 @@ stages:
               command: validate
               azureSubscription: dts-management-prod-intsvc
 
-          # - task: riezebosch.Packer.Packer.Packer@1
-          #   displayName: "PR Build"
-          #   name: prbuild
-          #   condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
-          #   inputs:
-          #     templatePath: $(templatePath)
-          #     variables: |
-          #       azure_image_version=$(System.PullRequest.PullRequestNumber).0.0
-          #       image_name=$(image_name)
-          #       jenkins_ssh_key=$(JENKINS_SSH_KEY)
-          #       image_sku=$(image_sku)
-          #       vm_size=$(vm_size)
-          #     command: build
-          #     azureSubscription: dts-management-prod-intsvc
-          #     options: --only=azure-arm.pr-build-and-publish
+          - task: riezebosch.Packer.Packer.Packer@1
+            displayName: "PR Build"
+            name: prbuild
+            condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
+            inputs:
+              templatePath: $(templatePath)
+              variables: |
+                azure_image_version=$(System.PullRequest.PullRequestNumber).0.0
+                image_name=$(image_name)
+                jenkins_ssh_key=$(JENKINS_SSH_KEY)
+                image_sku=$(image_sku)
+                vm_size=$(vm_size)
+              command: build
+              azureSubscription: dts-management-prod-intsvc
+              options: --only=azure-arm.pr-build-and-publish
 
           - task: AzureCLI@2.208.0
             displayName: Cleanup resources on fail
