@@ -39,7 +39,7 @@ stages:
               scriptType: bash
               scriptLocation: inlineScript
               inlineScript: |
-                AZURE_IMAGE_VERSION=$(az sig image-version list --gallery-image-definition jenkins-ubuntu --gallery-name hmcts --resource-group hmcts-image-gallery-rg --query '[].{name:name}' -o tsv | sort -V | tail -n1)
+                AZURE_IMAGE_VERSION=$(az sig image-version list --gallery-image-definition jenkins-ubuntu-v2 --gallery-name hmcts --resource-group hmcts-image-gallery-rg --query '[].{name:name}' -o tsv | sort -V | tail -n1)
                 IFS=. read -r major minor patch <<<"$AZURE_IMAGE_VERSION"
                 ((patch++))
                 printf -v AZURE_IMAGE_VERSION '%d.%d.%d' "$major" "$minor" "$((patch))"
@@ -53,8 +53,8 @@ stages:
         strategy:
           matrix:
             Ubuntu-amd64:
-              image_name: "jenkins-ubuntu"
-              image_sku: 20_04-lts
+              image_name: "jenkins-ubuntu-v2"
+              image_sku: server
               templatePath: jenkins-agent-ubuntu.pkr.hcl
               vm_size: "Standard_D4ds_v5"
         timeoutInMinutes: "120"
@@ -127,9 +127,37 @@ stages:
                 resource_group_name=$(echo $(prbuild.DeploymentName) | sed 's/pkrdp//')
                 az group delete --name "pkr-Resource-Group-${resource_group_name}" --yes
 
+          - task: AzureKeyVault@2
+            displayName: Get Github API token
+            condition: and(succeededOrFailed(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
+            inputs:
+              azureSubscription: dts-management-prod-intsvc
+              KeyVaultName: cftptl-intsvc
+              SecretsFilter: github-management-api-token
+
+          - task: AzureCLI@2.208.0
+            displayName: Check if PR build image should be kept
+            condition: and(succeededOrFailed(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
+            name: check_pr_label
+            inputs:
+              azureSubscription: dts-management-prod-intsvc
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                KEEP_IMAGE_LABEL=$(curl -s -H "Authorization Bearer $(github-management-api-token)" \
+                https://api.github.com/repos/hmcts/jenkins-packer/issues/$(System.PullRequest.PullRequestNumber)/labels | jq -r '.[] | select(.name == "keep_image")')
+
+                if [ -z "$KEEP_IMAGE_LABEL" ]; then
+                  echo "No keep-image label found, deleting image"
+                  echo "##vso[task.setvariable variable=delete_image;isOutput=true]true"
+                else
+                  echo "keep-image label found, keeping image"
+                  echo "##vso[task.setvariable variable=delete_image;isOutput=true]false"
+                fi
+
           - task: AzureCLI@2.208.0
             displayName: Delete published PR build image version
-            condition: and(succeededOrFailed(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
+            condition: and(succeededOrFailed(), ne(variables['Build.SourceBranch'], 'refs/heads/master') , eq(variables['check_pr_label.delete_image'], 'true'))
             name: delete_pr_azure_image_version
             inputs:
               azureSubscription: dts-management-prod-intsvc

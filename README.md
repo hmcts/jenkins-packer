@@ -6,7 +6,7 @@ This repo contains the scripts and config files to create Jenkins agent images.
 
 ## Requirements
 
-* Packer
+- Packer
 
 ## Renovate config
 
@@ -28,3 +28,6 @@ See [renovate versioning](https://docs.renovatebot.com/modules/versioning/) for 
 
 Because a lot of github releases use `v` prefixes, we have an `echo` statement paired with the `tr` command to remove these in our script when setting the version to be used e.g. `export FLUX_VERSION=$(echo v0.41.2 | tr -d 'v')`.
 
+## Testing a new image
+
+When you raise a PR on this repo, it will generate an image using packer. By default the image is deleted after it has been built but if you need to test changes, you can add the `keep_image` label to your PR. This will prevent the image from being deleted during the pipeline and allows you to test the image without the need to merge changes to Master.
