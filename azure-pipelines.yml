@@ -46,7 +46,7 @@ stages:
                 AZURE_IMAGE_VERSION=$(az sig image-version list --gallery-image-definition jenkins-ubuntu-v2 --gallery-name hmcts --resource-group hmcts-image-gallery-rg --query "[?starts_with(name, '$(major_version).')].{name:name}" -o tsv | sort -V | tail -n1)
 
                 if [ -z "$AZURE_IMAGE_VERSION" ]; then
-                    AZURE_IMAGE_VERSION="$(major_version).0.1"
+                    AZURE_IMAGE_VERSION="$(major_version).0.0"
                 else
                     IFS=. read -r major minor patch <<<"$AZURE_IMAGE_VERSION"
                     ((patch++))
