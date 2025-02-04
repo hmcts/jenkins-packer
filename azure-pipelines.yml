@@ -24,6 +24,10 @@ pr:
     include:
       - master
 
+variables: 
+  - name: ubuntu_version
+    value: "24"
+
 stages:
   - stage: build
     jobs:
@@ -42,7 +46,7 @@ stages:
                 AZURE_IMAGE_VERSION=$(az sig image-version list --gallery-image-definition jenkins-ubuntu-v2 --gallery-name hmcts --resource-group hmcts-image-gallery-rg --query '[].{name:name}' -o tsv | sort -V | tail -n1)
                 IFS=. read -r major minor patch <<<"$AZURE_IMAGE_VERSION"
                 ((patch++))
-                printf -v AZURE_IMAGE_VERSION '%d.%d.%d' "$major" "$minor" "$((patch))"
+                printf -v AZURE_IMAGE_VERSION '%d.%d.%d' "$ubuntu_version" "$minor" "$((patch))"
                 echo $AZURE_IMAGE_VERSION
                 echo "##vso[task.setvariable variable=azure_image_version;isoutput=true]$AZURE_IMAGE_VERSION"
 
@@ -195,7 +199,10 @@ stages:
 
           - task: GitHubRelease@1
             displayName: Create GitHubRelease
-            condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/master'))
+            condition: and(succeeded(), 
+              startsWith(variables['Build.SourceBranch'], 'refs/heads/master'), 
+              startsWith(variables['azure_image_version'], '$(ubuntu_version).')
+              )
             inputs:
               gitHubConnection: "GitHub Management - Full Repo Access"
               repositoryName: "$(Build.Repository.Name)"
