@@ -229,7 +229,23 @@ else
   apt install -y chromium-browser chromium-chromedriver
 fi
 
-echo "export CHROME_DEVEL_SANDBOX=/opt/google/chrome/chrome-sandbox" | tee /etc/profile.d/chrome-sandbox.sh
+# Creating an AppArmor profile to allow puppeteer to open Chrome
+# https://chromium.googlesource.com/chromium/src/+/main/docs/security/apparmor-userns-restrictions.md#option-2_a-safer-way
+export CHROMIUM_BUILD_PATH=/opt/jenkins/workspace/**/chrome-linux
+
+cat | tee /etc/apparmor.d/chrome-dev-builds <<EOF
+abi <abi/4.0>,
+include <tunables/global>
+
+profile chrome $CHROMIUM_BUILD_PATH flags=(unconfined) {
+  userns,
+
+  # Site-specific additions and overrides. See local/README for details.
+  include if exists <local/chrome>
+}
+EOF
+
+service apparmor reload  # reload AppArmor profiles to include the new one
 
 
 curl -fL -o tfcmt.tar.gz https://github.com/suzuki-shunsuke/tfcmt/releases/download/v${TFCMT_VERSION}/tfcmt_linux_${ARCHITECTURE}.tar.gz
