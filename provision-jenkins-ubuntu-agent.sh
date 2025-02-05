@@ -229,7 +229,7 @@ else
   apt install -y chromium-browser chromium-chromedriver
 fi
 
-export CHROME_DEVEL_SANDBOX=/opt/google/chrome/chrome-sandbox
+echo "export CHROME_DEVEL_SANDBOX=/opt/google/chrome/chrome-sandbox" | tee /etc/profile.d/chrome-sandbox.sh
 
 
 curl -fL -o tfcmt.tar.gz https://github.com/suzuki-shunsuke/tfcmt/releases/download/v${TFCMT_VERSION}/tfcmt_linux_${ARCHITECTURE}.tar.gz
