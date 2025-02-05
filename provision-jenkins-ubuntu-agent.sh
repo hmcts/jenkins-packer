@@ -229,7 +229,7 @@ else
   apt install -y chromium-browser chromium-chromedriver
 fi
 
-export CHROME_DEVEL_SANDBOX=/opt/google/chrome/chrome-sandbox
+echo 0 | tee /proc/sys/kernel/apparmor_restrict_unprivileged_userns # Disable apparmor to test
 
 
 curl -fL -o tfcmt.tar.gz https://github.com/suzuki-shunsuke/tfcmt/releases/download/v${TFCMT_VERSION}/tfcmt_linux_${ARCHITECTURE}.tar.gz
