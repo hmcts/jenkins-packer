@@ -231,27 +231,22 @@ fi
 
 # Creating an AppArmor profile to allow a11y and puppeteer to open Chrome
 # https://chromium.googlesource.com/chromium/src/+/main/docs/security/apparmor-userns-restrictions.md#option-2_a-safer-way
-# export CHROMIUM_BUILD_PATH=/opt/jenkins/workspace/**/chrome-linux/chrome
+export CHROMIUM_BUILD_PATH=/opt/jenkins/workspace/**/chrome-linux/chrome
 
-# cat | tee /etc/apparmor.d/chrome-dev-builds <<EOF
-# abi <abi/4.0>,
-# include <tunables/global>
+cat | tee /etc/apparmor.d/chrome-dev-builds <<EOF
+abi <abi/4.0>,
+include <tunables/global>
 
-# profile chrome $CHROMIUM_BUILD_PATH flags=(unconfined) {
-#   userns,
+profile chrome $CHROMIUM_BUILD_PATH flags=(unconfined) {
+  userns,
 
-#   # Site-specific additions and overrides. See local/README for details.
-#   include if exists <local/chrome>
-# }
-# EOF
+  # Site-specific additions and overrides. See local/README for details.
+  include if exists <local/chrome>
+}
+EOF
 
-# service apparmor reload  # reload AppArmor profiles to include the new one
+service apparmor reload  # reload AppArmor profiles to include the new one
 
-touch /etc/profile.d/chrome-dev.sh
-
-CHROME_DEVEL_SANDBOX="/opt/jenkins/workspace/Sandbox_cnp-plum-frontend_master/.yarn/unplugged/puppeteer-npm-9.1.1-e9a012ddd7/node_modules/puppeteer/.local-chromium/linux-869685/chrome-linux/chrome-sandbox"
-
-echo "export CHROME_DEVEL_SANDBOX=$CHROME_DEVEL_SANDBOX" | tee /etc/profile.d/chrome-dev.sh
 
 curl -fL -o tfcmt.tar.gz https://github.com/suzuki-shunsuke/tfcmt/releases/download/v${TFCMT_VERSION}/tfcmt_linux_${ARCHITECTURE}.tar.gz
 tar -C /usr/bin -xzf ./tfcmt.tar.gz tfcmt
