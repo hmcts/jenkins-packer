@@ -229,7 +229,7 @@ else
   apt install -y chromium-browser chromium-chromedriver
 fi
 
-# Creating an AppArmor profile to allow puppeteer to open Chrome
+# Creating an AppArmor profile to allow a11y and puppeteer to open Chrome
 # https://chromium.googlesource.com/chromium/src/+/main/docs/security/apparmor-userns-restrictions.md#option-2_a-safer-way
 export CHROMIUM_BUILD_PATH=/opt/jenkins/workspace/**/chrome-linux/chrome
 
@@ -237,10 +237,38 @@ cat | tee /etc/apparmor.d/chrome-dev-builds <<EOF
 abi <abi/4.0>,
 include <tunables/global>
 
-profile chrome $CHROMIUM_BUILD_PATH flags=(unconfined) {
-  userns,
+profile chrome $CHROMIUM_BUILD_PATH flags=(complain) {
+  # Basic requirements
+  include <abstractions/base>
+  include <abstractions/nameservice>
+  include <abstractions/user-tmp>
 
-  # Site-specific additions and overrides. See local/README for details.
+  # Network access
+  network tcp,
+  network udp,
+
+  # File access
+  /dev/shm/ r,
+  /dev/shm/** mrw,
+  /proc/** r,
+  /sys/kernel/mm/** r,
+  /usr/share/fonts/** r,
+  /tmp/** mrw,
+  owner /tmp/** mrw,
+  
+  # Chrome specific
+  $CHROMIUM_BUILD_PATH mr,
+  /opt/jenkins/workspace/** mrw,
+  
+  # Allow sandbox operations
+  capability sys_admin,
+  capability sys_chroot,
+  capability setuid,
+  capability setgid,
+
+  userns,
+  
+  # Site-specific additions
   include if exists <local/chrome>
 }
 EOF
