@@ -205,10 +205,7 @@ stages:
 
           - task: GitHubRelease@1
             displayName: Create GitHubRelease
-            condition: and(succeeded(), 
-              startsWith(variables['Build.SourceBranch'], 'refs/heads/master'), 
-              startsWith(variables['azure_image_version'], '$(major_version).')
-              )
+            condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/master'))
             inputs:
               gitHubConnection: "GitHub Management - Full Repo Access"
               repositoryName: "$(Build.Repository.Name)"
