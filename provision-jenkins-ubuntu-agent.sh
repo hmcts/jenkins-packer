@@ -231,7 +231,7 @@ fi
 
 # Creating an AppArmor profile to allow a11y and puppeteer to open Chrome
 # https://chromium.googlesource.com/chromium/src/+/main/docs/security/apparmor-userns-restrictions.md#option-2_a-safer-way
-export CHROMIUM_BUILD_PATH=/opt/jenkins/workspace/**/chrome
+export CHROMIUM_BUILD_PATH=/opt/jenkins/workspace/**
 
 cat | tee /etc/apparmor.d/chrome-dev-builds <<EOF
 abi <abi/4.0>,
