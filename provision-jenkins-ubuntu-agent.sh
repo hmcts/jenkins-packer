@@ -237,7 +237,7 @@ cat | tee /etc/apparmor.d/chrome-dev-builds <<EOF
 abi <abi/4.0>,
 include <tunables/global>
 
-profile chrome $CHROMIUM_BUILD_PATH flags=(unconfined) {
+profile chrome-dev $CHROMIUM_BUILD_PATH flags=(unconfined) {
   userns,
 
   # Site-specific additions and overrides. See local/README for details.
