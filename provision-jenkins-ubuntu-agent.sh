@@ -235,10 +235,10 @@ else
 fi
 
 # # Add environment variables to /etc/environment for system-wide persistence
-# echo "PUPPETEER_EXECUTABLE_PATH=/opt/google/chrome/chrome" | tee -a /etc/environment
-# echo "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true" | tee -a /etc/environment
+echo "PUPPETEER_EXECUTABLE_PATH=/opt/google/chrome/chrome" | tee -a /etc/environment
+echo "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true" | tee -a /etc/environment
 
-# source /etc/environment
+source /etc/environment
 
 curl -fL -o tfcmt.tar.gz https://github.com/suzuki-shunsuke/tfcmt/releases/download/v${TFCMT_VERSION}/tfcmt_linux_${ARCHITECTURE}.tar.gz
 tar -C /usr/bin -xzf ./tfcmt.tar.gz tfcmt
