@@ -124,13 +124,7 @@ apt install -y \
   build-essential \
   libosmesa6 \
   libosmesa6-dev \
-  libxcursor1 \
-  libxdamage1 \
   libxrandr2 \
-  libpango-1.0-0 \
-  libatk1.0-0 \
-  libatk-bridge2.0-0 \
-  libgtk-3-0 \
   libxss1 \
   rsync \
   libpq-dev \
@@ -160,7 +154,19 @@ apt install -y \
   pdftk-java \
   libreoffice-core \
   libreoffice-writer \
-  ffmpeg
+  ffmpeg \
+  libnss3 \
+  libnspr4 \
+  libgbm1 \
+  libasound2 \
+  libpango1.0-0 \
+  libcups2 \
+  libc6 \
+  libexpat1 \
+  libgcc1 \
+  libstdc++6 \
+  libxtst6 \
+  xdg-utils \ 
   
 ACCEPT_EULA=Y apt install -y \
   mssql-tools18 \
@@ -229,11 +235,11 @@ else
   apt install -y chromium-browser chromium-chromedriver
 fi
 
-# Add environment variables to /etc/environment for system-wide persistence
-echo "PUPPETEER_EXECUTABLE_PATH=/opt/google/chrome/chrome" | tee -a /etc/environment
-echo "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true" | tee -a /etc/environment
+# # Add environment variables to /etc/environment for system-wide persistence
+# echo "PUPPETEER_EXECUTABLE_PATH=/opt/google/chrome/chrome" | tee -a /etc/environment
+# echo "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true" | tee -a /etc/environment
 
-source /etc/environment
+# source /etc/environment
 
 curl -fL -o tfcmt.tar.gz https://github.com/suzuki-shunsuke/tfcmt/releases/download/v${TFCMT_VERSION}/tfcmt_linux_${ARCHITECTURE}.tar.gz
 tar -C /usr/bin -xzf ./tfcmt.tar.gz tfcmt
