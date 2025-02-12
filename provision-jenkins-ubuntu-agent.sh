@@ -158,8 +158,7 @@ apt install -y \
   libnss3 \
   libnspr4 \
   libgbm1 \
-  libasound2 \
-  libpango1.0-0 \
+  libasound2t64 \
   libcups2 \
   libc6 \
   libexpat1 \
