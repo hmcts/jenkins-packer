@@ -231,21 +231,23 @@ fi
 
 # Creating an AppArmor profile to allow a11y and puppeteer to open Chrome
 # https://chromium.googlesource.com/chromium/src/+/main/docs/security/apparmor-userns-restrictions.md#option-2_a-safer-way
-export CHROMIUM_BUILD_PATH=/opt/jenkins/workspace/**
+# export CHROMIUM_BUILD_PATH=/opt/jenkins/workspace/**
 
-cat | tee /etc/apparmor.d/chrome-dev-builds <<EOF
-abi <abi/4.0>,
-include <tunables/global>
+# cat | tee /etc/apparmor.d/chrome-dev-builds <<EOF
+# abi <abi/4.0>,
+# include <tunables/global>
 
-profile chrome $CHROMIUM_BUILD_PATH flags=(unconfined) {
-  userns,
+# profile chrome $CHROMIUM_BUILD_PATH flags=(unconfined) {
+#   userns,
 
-  # Site-specific additions and overrides. See local/README for details.
-  include if exists <local/chrome>
-}
-EOF
+#   # Site-specific additions and overrides. See local/README for details.
+#   include if exists <local/chrome>
+# }
+# EOF
 
-systemctl reload apparmor  # reload AppArmor profiles to include the new one
+# systemctl reload apparmor  # reload AppArmor profiles to include the new one
+
+echo 'kernel.apparmor_restrict_unprivileged_userns = 0' | tee /etc/sysctl.d/20-apparmor-donotrestrict.conf
 
 
 curl -fL -o tfcmt.tar.gz https://github.com/suzuki-shunsuke/tfcmt/releases/download/v${TFCMT_VERSION}/tfcmt_linux_${ARCHITECTURE}.tar.gz
