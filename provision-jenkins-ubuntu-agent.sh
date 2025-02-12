@@ -142,7 +142,6 @@ apt install -y \
   libreadline-dev \
   libsqlite3-dev \
   llvm \
-  libncursesw5-dev \
   xz-utils \
   tk-dev \
   libxml2-dev \
@@ -160,13 +159,13 @@ apt install -y \
   libgbm1 \
   libasound2t64 \
   libpango-1.0-0 \
-  libcups2 \
+  libcups2t64 \
   libc6 \
   libexpat1 \
-  libgcc1 \
+  libgcc-s1 \
   libstdc++6 \
   libxtst6 \
-  xdg-utils \ 
+  xdg-utils
   
 ACCEPT_EULA=Y apt install -y \
   mssql-tools18 \
