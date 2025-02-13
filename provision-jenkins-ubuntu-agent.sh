@@ -334,5 +334,3 @@ dpkg -l | grep "^ii"
 # # Add environment variables to /etc/environment for system-wide persistence
 echo "PUPPETEER_EXECUTABLE_PATH=/opt/google/chrome/chrome" | tee -a /etc/environment
 echo "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true" | tee -a /etc/environment
-
-source /etc/environment
