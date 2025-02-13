@@ -230,12 +230,14 @@ if [ ${ARCHITECTURE} = "amd64" ]; then
   curl https://dl.google.com/linux/direct/google-chrome-stable_current_${ARCHITECTURE}.deb -o google-chrome-stable_current_${ARCHITECTURE}.deb
   apt install -y ./google-chrome-stable_current_${ARCHITECTURE}.deb
   rm -f google-chrome-stable_current_${ARCHITECTURE}.deb
+  INSTALL_PATH=$(which google-chrome)
 else
   apt install -y chromium-browser chromium-chromedriver
+  INSTALL_PATH=$(which chromium-browser)
 fi
 
-# # Add environment variables to /etc/environment for system-wide persistence
-echo "PUPPETEER_EXECUTABLE_PATH=/opt/google/chrome/chrome" | tee -a /etc/environment
+# Set path of chrome executable for puppeteer
+echo "PUPPETEER_EXECUTABLE_PATH=$INSTALL_PATH" | tee -a /etc/environment
 echo "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true" | tee -a /etc/environment
 
 curl -fL -o tfcmt.tar.gz https://github.com/suzuki-shunsuke/tfcmt/releases/download/v${TFCMT_VERSION}/tfcmt_linux_${ARCHITECTURE}.tar.gz
