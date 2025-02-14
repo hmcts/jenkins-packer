@@ -226,21 +226,20 @@ rvm install 3.2.2
 
 ####
 
-CHROME_VERSION="91.0.4472.101-1"
-
 if [ ${ARCHITECTURE} = "amd64" ]; then
-#   curl https://dl.google.com/linux/direct/google-chrome-stable_current_${ARCHITECTURE}.deb -o google-chrome-stable_current_${ARCHITECTURE}.deb
-    curl https://mirror.cs.uchicago.edu/google-chrome/pool/main/g/google-chrome-stable/google-chrome-stable_${CHROME_VERSION}_amd64.deb -o google-chrome-stable_${CHROME_VERSION}_amd64.deb
-#   apt install -y ./google-chrome-stable_current_${ARCHITECTURE}.deb
-    apt install -y ./google-chrome-stable_${CHROME_VERSION}_amd64.deb
-#   rm -f google-chrome-stable_current_${ARCHITECTURE}.deb
-    rm -f google-chrome-stable_${CHROME_VERSION}_amd64.deb
+  curl https://dl.google.com/linux/direct/google-chrome-stable_current_${ARCHITECTURE}.deb -o google-chrome-stable_current_${ARCHITECTURE}.deb
+  apt install -y ./google-chrome-stable_current_${ARCHITECTURE}.deb
+  rm -f google-chrome-stable_current_${ARCHITECTURE}.deb
+  CHROME_INSTALL_PATH=$(which google-chrome)
 else
   apt install -y chromium-browser chromium-chromedriver
+  CHROME_INSTALL_PATH=$(which chromium-browser)
 fi
 
+echo $CHROME_INSTALL_PATH
+
 # Set path of chrome executable for puppeteer
-echo "PUPPETEER_EXECUTABLE_PATH=/opt/google/chrome/chrome" | tee -a /etc/environment
+# echo "PUPPETEER_EXECUTABLE_PATH=$CHROME_INSTALL_PATH" | tee -a /etc/environment
 # echo "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true" | tee -a /etc/environment
 
 curl -fL -o tfcmt.tar.gz https://github.com/suzuki-shunsuke/tfcmt/releases/download/v${TFCMT_VERSION}/tfcmt_linux_${ARCHITECTURE}.tar.gz
