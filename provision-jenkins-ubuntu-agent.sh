@@ -236,7 +236,7 @@ fi
 
 # Allow chromium executables under this path to run with AppArmor
 # Required for Puppeteer to work
-export CHROMIUM_BUILD_PATH=/opt/jenkins/workspace/**
+export CHROMIUM_BUILD_PATH=/home/jenkinsssh/.cache/puppeteer/**
 
 cat | sudo tee /etc/apparmor.d/chrome-dev <<EOF
 abi <abi/4.0>,
