@@ -229,7 +229,19 @@ else
   apt install -y chromium-browser chromium-chromedriver
 fi
 
-export CHROME_DEVEL_SANDBOX=/opt/google/chrome/chrome-sandbox
+export CHROMIUM_BUILD_PATH=/opt/jenkins/workspace/**
+
+cat | sudo tee /etc/apparmor.d/chrome-dev <<EOF
+abi <abi/4.0>,
+include <tunables/global>
+
+profile chrome-dev $CHROMIUM_BUILD_PATH flags=(unconfined) {
+  userns,
+
+  # Site-specific additions and overrides. See local/README for details.
+  include if exists <local/chrome>
+}
+EOF
 
 
 curl -fL -o tfcmt.tar.gz https://github.com/suzuki-shunsuke/tfcmt/releases/download/v${TFCMT_VERSION}/tfcmt_linux_${ARCHITECTURE}.tar.gz
