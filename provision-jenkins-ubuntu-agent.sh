@@ -230,17 +230,25 @@ if [ ${ARCHITECTURE} = "amd64" ]; then
   curl https://dl.google.com/linux/direct/google-chrome-stable_current_${ARCHITECTURE}.deb -o google-chrome-stable_current_${ARCHITECTURE}.deb
   apt install -y ./google-chrome-stable_current_${ARCHITECTURE}.deb
   rm -f google-chrome-stable_current_${ARCHITECTURE}.deb
-  CHROME_PATH=$(which google-chrome)
 else
   apt install -y chromium-browser chromium-chromedriver
-  CHROME_PATH=$(which chromium-browser)
 fi
 
-RESOLVED_CHROME_PATH=$(readlink -f $CHROME_PATH)
+# Allow chromium executables under this path to run with AppArmor
+# Required for Puppeteer to work
+export CHROMIUM_BUILD_PATH=/**/chrome
 
-# Set path of chrome executable for puppeteer
-echo "PUPPETEER_EXECUTABLE_PATH=$RESOLVED_CHROME_PATH" | tee -a /etc/environment
-echo "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true" | tee -a /etc/environment
+cat | sudo tee /etc/apparmor.d/chrome-dev <<EOF
+abi <abi/4.0>,
+include <tunables/global>
+
+profile chrome-dev $CHROMIUM_BUILD_PATH flags=(unconfined) {
+  userns,
+
+  # Site-specific additions and overrides. See local/README for details.
+  include if exists <local/chrome>
+}
+EOF
 
 # Allow chromium executables under this path to run with AppArmor
 # Required for Puppeteer to work
