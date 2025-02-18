@@ -124,13 +124,7 @@ apt install -y \
   build-essential \
   libosmesa6 \
   libosmesa6-dev \
-  libxcursor1 \
-  libxdamage1 \
   libxrandr2 \
-  libpango-1.0-0 \
-  libatk1.0-0 \
-  libatk-bridge2.0-0 \
-  libgtk-3-0 \
   libxss1 \
   rsync \
   libpq-dev \
@@ -148,7 +142,6 @@ apt install -y \
   libreadline-dev \
   libsqlite3-dev \
   llvm \
-  libncursesw5-dev \
   xz-utils \
   tk-dev \
   libxml2-dev \
@@ -160,7 +153,19 @@ apt install -y \
   pdftk-java \
   libreoffice-core \
   libreoffice-writer \
-  ffmpeg
+  ffmpeg \
+  libnss3 \
+  libnspr4 \
+  libgbm1 \
+  libasound2t64 \
+  libpango-1.0-0 \
+  libcups2t64 \
+  libc6 \
+  libexpat1 \
+  libgcc-s1 \
+  libstdc++6 \
+  libxtst6 \
+  xdg-utils
   
 ACCEPT_EULA=Y apt install -y \
   mssql-tools18 \
@@ -225,12 +230,33 @@ if [ ${ARCHITECTURE} = "amd64" ]; then
   curl https://dl.google.com/linux/direct/google-chrome-stable_current_${ARCHITECTURE}.deb -o google-chrome-stable_current_${ARCHITECTURE}.deb
   apt install -y ./google-chrome-stable_current_${ARCHITECTURE}.deb
   rm -f google-chrome-stable_current_${ARCHITECTURE}.deb
+  CHROME_PATH=$(which google-chrome)
 else
   apt install -y chromium-browser chromium-chromedriver
+  CHROME_PATH=$(which chromium-browser)
 fi
 
-export CHROME_DEVEL_SANDBOX=/opt/google/chrome/chrome-sandbox
+RESOLVED_CHROME_PATH=$(readlink -f $CHROME_PATH)
 
+# Set path of chrome executable for puppeteer
+echo "PUPPETEER_EXECUTABLE_PATH=$RESOLVED_CHROME_PATH" | tee -a /etc/environment
+echo "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true" | tee -a /etc/environment
+
+# Allow chromium executables under this path to run with AppArmor
+# Required for Puppeteer to work
+export CHROMIUM_BUILD_PATH=/**/chrome
+
+cat | sudo tee /etc/apparmor.d/chrome-dev <<EOF
+abi <abi/4.0>,
+include <tunables/global>
+
+profile chrome-dev $CHROMIUM_BUILD_PATH flags=(unconfined) {
+  userns,
+
+  # Site-specific additions and overrides. See local/README for details.
+  include if exists <local/chrome>
+}
+EOF
 
 curl -fL -o tfcmt.tar.gz https://github.com/suzuki-shunsuke/tfcmt/releases/download/v${TFCMT_VERSION}/tfcmt_linux_${ARCHITECTURE}.tar.gz
 tar -C /usr/bin -xzf ./tfcmt.tar.gz tfcmt
@@ -328,3 +354,5 @@ pip-check
 
 printf "Packages installed via apt are listed below with their versions\n"
 dpkg -l | grep "^ii"
+
+
