@@ -165,6 +165,8 @@ apt install -y \
   libgcc-s1 \
   libstdc++6 \
   libxtst6 \
+  libmanette-0.2-0 \
+  libavif16 \
   xdg-utils
   
 ACCEPT_EULA=Y apt install -y \
