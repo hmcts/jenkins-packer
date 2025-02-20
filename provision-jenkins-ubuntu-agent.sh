@@ -252,22 +252,6 @@ profile chrome-dev $CHROMIUM_BUILD_PATH flags=(unconfined) {
 }
 EOF
 
-# Allow chromium executables under this path to run with AppArmor
-# Required for Puppeteer to work
-export CHROMIUM_BUILD_PATH=/**/chrome
-
-cat | sudo tee /etc/apparmor.d/chrome-dev <<EOF
-abi <abi/4.0>,
-include <tunables/global>
-
-profile chrome-dev $CHROMIUM_BUILD_PATH flags=(unconfined) {
-  userns,
-
-  # Site-specific additions and overrides. See local/README for details.
-  include if exists <local/chrome>
-}
-EOF
-
 curl -fL -o tfcmt.tar.gz https://github.com/suzuki-shunsuke/tfcmt/releases/download/v${TFCMT_VERSION}/tfcmt_linux_${ARCHITECTURE}.tar.gz
 tar -C /usr/bin -xzf ./tfcmt.tar.gz tfcmt
 
