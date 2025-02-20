@@ -165,6 +165,8 @@ apt install -y \
   libgcc-s1 \
   libstdc++6 \
   libxtst6 \
+  libmanette-0.2-0 \
+  libavif16 \
   xdg-utils
   
 ACCEPT_EULA=Y apt install -y \
@@ -233,6 +235,22 @@ if [ ${ARCHITECTURE} = "amd64" ]; then
 else
   apt install -y chromium-browser chromium-chromedriver
 fi
+
+# Allow chromium executables under this path to run with AppArmor
+# Required for Puppeteer to work
+export CHROMIUM_BUILD_PATH=/**/chrome
+
+cat | sudo tee /etc/apparmor.d/chrome-dev <<EOF
+abi <abi/4.0>,
+include <tunables/global>
+
+profile chrome-dev $CHROMIUM_BUILD_PATH flags=(unconfined) {
+  userns,
+
+  # Site-specific additions and overrides. See local/README for details.
+  include if exists <local/chrome>
+}
+EOF
 
 # Allow chromium executables under this path to run with AppArmor
 # Required for Puppeteer to work

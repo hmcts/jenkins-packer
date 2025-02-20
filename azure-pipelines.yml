@@ -25,7 +25,7 @@ pr:
       - master
 
 variables: 
-  - name: major_version # Major version that will be used for non PR images - matches OS version
+  - name: major_minor_version # Major and minor version that will be used for non PR images - matches OS version
     value: "24.04"
 
 stages:
@@ -43,14 +43,14 @@ stages:
               scriptType: bash
               scriptLocation: inlineScript
               inlineScript: |
-                AZURE_IMAGE_VERSION=$(az sig image-version list --gallery-image-definition jenkins-ubuntu-v2 --gallery-name hmcts --resource-group hmcts-image-gallery-rg --query "[?starts_with(name, '$(major_version).')].{name:name}" -o tsv | sort -V | tail -n1)
+                AZURE_IMAGE_VERSION=$(az sig image-version list --gallery-image-definition jenkins-ubuntu-v2 --gallery-name hmcts --resource-group hmcts-image-gallery-rg --query "[?starts_with(name, '$(major_minor_version).')].{name:name}" -o tsv | sort -V | tail -n1)
 
                 if [ -z "$AZURE_IMAGE_VERSION" ]; then
-                    AZURE_IMAGE_VERSION="$(major_version).0"
+                    AZURE_IMAGE_VERSION="$(major_minor_version).0"
                 else
                     IFS=. read -r major minor patch <<<"$AZURE_IMAGE_VERSION"
                     ((patch++))
-                    printf -v AZURE_IMAGE_VERSION '%d.%d.%d' "$major" "$minor" "$((patch))"
+                    printf -v AZURE_IMAGE_VERSION '%d.%02d.%d' "$major" "$minor" "$((patch))"
                 fi
 
                 echo $AZURE_IMAGE_VERSION
