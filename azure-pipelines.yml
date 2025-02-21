@@ -1,13 +1,13 @@
 name: Jenkins Agent Packer
 
 schedules:
-# Run once a week
-- cron: '0 2 * * 1'  # Every monday at 2am UTC
-  displayName: Weekly scheduled build # friendly name given to a specific schedule
-  branches:
-    include:
-    - master
-  always: true
+  # Run once a week
+  - cron: '0 2 * * 1' # Every monday at 2am UTC
+    displayName: Weekly scheduled build # friendly name given to a specific schedule
+    branches:
+      include:
+        - master
+    always: true
 
 trigger:
   branches:
@@ -15,9 +15,9 @@ trigger:
       - master
   paths:
     include:
-    - azure-pipelines.yml
-    - jenkins-agent-ubuntu.pkr.hcl
-    - provision-jenkins-ubuntu-agent.sh
+      - azure-pipelines.yml
+      - jenkins-agent-ubuntu.pkr.hcl
+      - provision-jenkins-ubuntu-agent.sh
 
 pr:
   branches:
@@ -53,16 +53,16 @@ stages:
         strategy:
           matrix:
             Ubuntu-amd64:
-              image_name: "jenkins-ubuntu"
+              image_name: 'jenkins-ubuntu'
               image_sku: 20_04-lts
               templatePath: jenkins-agent-ubuntu.pkr.hcl
-              vm_size: "Standard_D4ds_v5"
+              vm_size: 'Standard_D4ds_v5'
             Ubuntu-arm64:
-              image_name: "jenkins-ubuntu-arm"
+              image_name: 'jenkins-ubuntu-arm'
               image_sku: 20_04-lts-arm64
               templatePath: jenkins-agent-ubuntu.pkr.hcl
-              vm_size: "Standard_D4pds_v5"
-        timeoutInMinutes: "120"
+              vm_size: 'Standard_D4pds_v5'
+        timeoutInMinutes: '120'
         variables:
           azure_image_version: $[ dependencies.get_azure_image_version.outputs['get_azure_image_version.azure_image_version'] ]
         steps:
@@ -112,11 +112,11 @@ stages:
             inputs:
               templatePath: $(templatePath)
               variables: |
-                  azure_image_version=$(System.PullRequest.PullRequestNumber).0.0
-                  image_name=$(image_name)
-                  jenkins_ssh_key=$(JENKINS_SSH_KEY)
-                  image_sku=$(image_sku)
-                  vm_size=$(vm_size)
+                azure_image_version=$(System.PullRequest.PullRequestNumber).0.0
+                image_name=$(image_name)
+                jenkins_ssh_key=$(JENKINS_SSH_KEY)
+                image_sku=$(image_sku)
+                vm_size=$(vm_size)
               command: build
               azureSubscription: dts-management-prod-intsvc
               options: --only=azure-arm.pr-build-and-publish
@@ -132,9 +132,36 @@ stages:
                 resource_group_name=$(echo $(prbuild.DeploymentName) | sed 's/pkrdp//')
                 az group delete --name "pkr-Resource-Group-${resource_group_name}" --yes
 
+          - task: AzureKeyVault@2
+            displayName: Get Github API token
+            condition: and(succeededOrFailed(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
+            inputs:
+              azureSubscription: dts-management-prod-intsvc
+              KeyVaultName: cftptl-intsvc
+              SecretsFilter: github-management-api-token
+
+          - task: AzureCLI@2.208.0
+            displayName: Check if PR build image should be kept
+            condition: and(succeededOrFailed(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
+            name: check_pr_label
+            inputs:
+              azureSubscription: dts-management-prod-intsvc
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                KEEP_IMAGE_LABEL=$(curl -s -H "Authorization Bearer $(github-management-api-token)" \
+                https://api.github.com/repos/hmcts/jenkins-packer/issues/$(System.PullRequest.PullRequestNumber)/labels | jq -r '.[] | select(.name == "keep_image")')
+                if [ -z "$KEEP_IMAGE_LABEL" ]; then
+                  echo "No keep-image label found, deleting image"
+                  echo "##vso[task.setvariable variable=delete_image;isOutput=true]true"
+                else
+                  echo "keep-image label found, keeping image"
+                  echo "##vso[task.setvariable variable=delete_image;isOutput=true]false"
+                fi
+                
           - task: AzureCLI@2.208.0
             displayName: Delete published PR build image version
-            condition: and(succeededOrFailed(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
+            condition: and(succeededOrFailed(), ne(variables['Build.SourceBranch'], 'refs/heads/master') , eq(variables['check_pr_label.delete_image'], 'true'))
             name: delete_pr_azure_image_version
             inputs:
               azureSubscription: dts-management-prod-intsvc
@@ -149,39 +176,39 @@ stages:
             inputs:
               templatePath: $(templatePath)
               variables: |
-                  azure_image_version=$(azure_image_version)
-                  image_name=$(image_name)
-                  jenkins_ssh_key=$(JENKINS_SSH_KEY)
-                  image_sku=$(image_sku)
-                  vm_size=$(vm_size)
+                azure_image_version=$(azure_image_version)
+                image_name=$(image_name)
+                jenkins_ssh_key=$(JENKINS_SSH_KEY)
+                image_sku=$(image_sku)
+                vm_size=$(vm_size)
               command: build
               azureSubscription: dts-management-prod-intsvc
               options: --only=azure-arm.master-build-and-publish
-  
+
   - stage: release
     dependsOn: build
     jobs:
-    - job: Publish_release
-      pool:
-        vmImage: 'ubuntu-latest'
-      timeoutInMinutes: "120"
-      variables: 
-        azure_image_version: $[ stageDependencies.build.get_azure_image_version.outputs['get_azure_image_version.azure_image_version'] ]
-      steps:
-        - checkout: self
+      - job: Publish_release
+        pool:
+          vmImage: 'ubuntu-latest'
+        timeoutInMinutes: '120'
+        variables:
+          azure_image_version: $[ stageDependencies.build.get_azure_image_version.outputs['get_azure_image_version.azure_image_version'] ]
+        steps:
+          - checkout: self
 
-        - task: GitHubRelease@1
-          displayName: Create GitHubRelease
-          condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/master'))
-          inputs:
-            gitHubConnection: 'GitHub Management - Full Repo Access'
-            repositoryName: '$(Build.Repository.Name)'
-            action: 'create'
-            target: '$(Build.SourceVersion)'
-            tagSource: 'userSpecifiedTag'
-            tag: '$(azure_image_version)'
-            title: '$(azure_image_version)'
-            releaseNotesSource: inline
-            releaseNotesInline: 'Regular maintenance updates for non-pinned packages'
-            addChangeLog: true
-            compareWith: 'lastFullRelease'
+          - task: GitHubRelease@1
+            displayName: Create GitHubRelease
+            condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/master'))
+            inputs:
+              gitHubConnection: 'GitHub Management - Full Repo Access'
+              repositoryName: '$(Build.Repository.Name)'
+              action: 'create'
+              target: '$(Build.SourceVersion)'
+              tagSource: 'userSpecifiedTag'
+              tag: '$(azure_image_version)'
+              title: '$(azure_image_version)'
+              releaseNotesSource: inline
+              releaseNotesInline: 'Regular maintenance updates for non-pinned packages'
+              addChangeLog: true
+              compareWith: 'lastFullRelease'
