@@ -6,6 +6,7 @@
 #renovate: datasource=github-tags depName=fluxcd/flux2
 export FLUX_VERSION=$(echo v2.5.0 | tr -d 'v')
 #renovate: datasource=github-tags depName=helm/helm
+# to keep in sync - PR to change helmVersion here: https://github.com/hmcts/cnp-azuredevops-libraries/blob/c3ce660829540bbb8b58691dba224d00fe9930e3/steps/charts/validate.yaml#L9, when updating below
 export HELM_VERSION=$(echo v3.17.1 | tr -d 'v')
 #renovate: datasource=github-tags depName=kubernetes/kubectl
 export KUBECTL_VERSION=$(echo v1.26.0 | tr -d 'v')
