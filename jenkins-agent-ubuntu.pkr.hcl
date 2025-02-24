@@ -61,7 +61,7 @@ variable "jenkins_ssh_key" {
 
 variable "image_offer" {
   type = string
-  default = "0001-com-ubuntu-server-focal"
+  default = "0001-com-ubuntu-server-jammy"
 }
 
 variable "image_publisher" {
@@ -71,7 +71,7 @@ variable "image_publisher" {
 
 variable "image_sku" {
   type = string
-  default = "20_04-lts"
+  default = "22_04-lts-gen2"
 }
 
 variable "image_name" {
