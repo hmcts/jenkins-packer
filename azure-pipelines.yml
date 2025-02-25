@@ -2,7 +2,7 @@ name: Jenkins Agent Packer
 
 schedules:
   # Run once a week
-  - cron: "0 2 * * 1" # Every monday at 2am UTC
+  - cron: '0 2 * * 1' # Every monday at 2am UTC
     displayName: Weekly scheduled build # friendly name given to a specific schedule
     branches:
       include:
@@ -24,16 +24,12 @@ pr:
     include:
       - master
 
-variables: 
-  - name: major_minor_version # Major and minor version that will be used for non PR images - matches OS version
-    value: "24.04"
-
 stages:
   - stage: build
     jobs:
       - job: get_azure_image_version
         pool:
-          vmImage: "ubuntu-latest"
+          vmImage: 'ubuntu-latest'
         steps:
           - task: AzureCLI@2.208.0
             displayName: Get latest azure image version
@@ -43,31 +39,25 @@ stages:
               scriptType: bash
               scriptLocation: inlineScript
               inlineScript: |
-                AZURE_IMAGE_VERSION=$(az sig image-version list --gallery-image-definition jenkins-ubuntu-v2 --gallery-name hmcts --resource-group hmcts-image-gallery-rg --query "[?starts_with(name, '$(major_minor_version).')].{name:name}" -o tsv | sort -V | tail -n1)
-
-                if [ -z "$AZURE_IMAGE_VERSION" ]; then
-                    AZURE_IMAGE_VERSION="$(major_minor_version).0"
-                else
-                    IFS=. read -r major minor patch <<<"$AZURE_IMAGE_VERSION"
-                    ((patch++))
-                    printf -v AZURE_IMAGE_VERSION '%d.%02d.%d' "$major" "$minor" "$((patch))"
-                fi
-
+                AZURE_IMAGE_VERSION=$(az sig image-version list --gallery-image-definition jenkins-ubuntu --gallery-name hmcts --resource-group hmcts-image-gallery-rg --query '[].{name:name}' -o tsv | sort -V | tail -n1)
+                IFS=. read -r major minor patch <<<"$AZURE_IMAGE_VERSION"
+                ((patch++))
+                printf -v AZURE_IMAGE_VERSION '%d.%d.%d' "$major" "$minor" "$((patch))"
                 echo $AZURE_IMAGE_VERSION
                 echo "##vso[task.setvariable variable=azure_image_version;isoutput=true]$AZURE_IMAGE_VERSION"
 
       - job: build_image
         pool:
-          vmImage: "ubuntu-latest"
+          vmImage: 'ubuntu-latest'
         dependsOn: get_azure_image_version
         strategy:
           matrix:
             Ubuntu-amd64:
-              image_name: "jenkins-ubuntu-v2"
-              image_sku: server
+              image_name: 'jenkins-ubuntu'
+              image_sku: 20_04-lts
               templatePath: jenkins-agent-ubuntu.pkr.hcl
-              vm_size: "Standard_D4ds_v5"
-        timeoutInMinutes: "120"
+              vm_size: 'Standard_D4ds_v5'
+        timeoutInMinutes: '120'
         variables:
           azure_image_version: $[ dependencies.get_azure_image_version.outputs['get_azure_image_version.azure_image_version'] ]
         steps:
@@ -99,19 +89,19 @@ stages:
                 az sig image-version delete --gallery-image-version $(System.PullRequest.PullRequestNumber).0.0 --gallery-image-definition $(image_name) --gallery-name hmcts --resource-group hmcts-image-gallery-rg
 
           - task: riezebosch.Packer.PackerTool.PackerTool@0
-            displayName: "Install Packer"
+            displayName: 'Install Packer'
             inputs:
               version: 1.9.1
 
           - task: riezebosch.Packer.Packer.Packer@1
-            displayName: "Validate"
+            displayName: 'Validate'
             inputs:
               templatePath: $(templatePath)
               command: validate
               azureSubscription: dts-management-prod-intsvc
 
           - task: riezebosch.Packer.Packer.Packer@1
-            displayName: "PR Build"
+            displayName: 'PR Build'
             name: prbuild
             condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
             inputs:
@@ -156,7 +146,6 @@ stages:
               inlineScript: |
                 KEEP_IMAGE_LABEL=$(curl -s -H "Authorization Bearer $(github-management-api-token)" \
                 https://api.github.com/repos/hmcts/jenkins-packer/issues/$(System.PullRequest.PullRequestNumber)/labels | jq -r '.[] | select(.name == "keep_image")')
-
                 if [ -z "$KEEP_IMAGE_LABEL" ]; then
                   echo "No keep-image label found, deleting image"
                   echo "##vso[task.setvariable variable=delete_image;isOutput=true]true"
@@ -177,7 +166,7 @@ stages:
                 az sig image-version delete --gallery-image-version $(System.PullRequest.PullRequestNumber).0.0 --gallery-image-definition $(image_name) --gallery-name hmcts --resource-group hmcts-image-gallery-rg
 
           - task: riezebosch.Packer.Packer.Packer@1
-            displayName: "Master Build"
+            displayName: 'Master Build'
             condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/master'))
             inputs:
               templatePath: $(templatePath)
@@ -196,8 +185,8 @@ stages:
     jobs:
       - job: Publish_release
         pool:
-          vmImage: "ubuntu-latest"
-        timeoutInMinutes: "120"
+          vmImage: 'ubuntu-latest'
+        timeoutInMinutes: '120'
         variables:
           azure_image_version: $[ stageDependencies.build.get_azure_image_version.outputs['get_azure_image_version.azure_image_version'] ]
         steps:
@@ -207,14 +196,14 @@ stages:
             displayName: Create GitHubRelease
             condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/master'))
             inputs:
-              gitHubConnection: "GitHub Management - Full Repo Access"
-              repositoryName: "$(Build.Repository.Name)"
-              action: "create"
-              target: "$(Build.SourceVersion)"
-              tagSource: "userSpecifiedTag"
-              tag: "$(azure_image_version)"
-              title: "$(azure_image_version)"
+              gitHubConnection: 'GitHub Management - Full Repo Access'
+              repositoryName: '$(Build.Repository.Name)'
+              action: 'create'
+              target: '$(Build.SourceVersion)'
+              tagSource: 'userSpecifiedTag'
+              tag: '$(azure_image_version)'
+              title: '$(azure_image_version)'
               releaseNotesSource: inline
-              releaseNotesInline: "Regular maintenance updates for non-pinned packages"
+              releaseNotesInline: 'Regular maintenance updates for non-pinned packages'
               addChangeLog: true
-              compareWith: "lastFullRelease"
+              compareWith: 'lastFullRelease'
