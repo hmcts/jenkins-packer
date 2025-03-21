@@ -14,7 +14,7 @@ export NODE_VERSION=$(echo 20 | tr -d 'v')
 #renovate: datasource=github-tags depName=nvm-sh/nvm
 export NVM_VERSION=$(echo v0.40.2 | tr -d 'v')
 #renovate: datasource=github-tags depName=SonarSource/sonar-scanner-cli versioning=regex
-export SONAR_SCANNER_VERSION=$(echo 6.2.1.4610 | tr -d 'v')
+export SONAR_SCANNER_VERSION=$(echo 7.1.0.4889 | tr -d 'v')
 #renovate: datasource=github-tags depName=hashicorp/terraform
 export TF_VERSION=$(echo v1.11.2 | tr -d 'v')
 #renovate: datasource=github-tags depName=suzuki-shunsuke/tfcmt
