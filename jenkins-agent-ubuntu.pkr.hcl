@@ -1,3 +1,12 @@
+packer {
+  required_plugins {
+    azure = {
+      source  = "github.com/hashicorp/azure"
+      version = "2.3.2"
+    }
+  }
+}
+
 variable "client_id" {
   type    = string
   default = ""
@@ -61,7 +70,7 @@ variable "jenkins_ssh_key" {
 
 variable "image_offer" {
   type = string
-  default = "0001-com-ubuntu-server-focal"
+  default = "ubuntu-24_04-lts"
 }
 
 variable "image_publisher" {
@@ -71,12 +80,17 @@ variable "image_publisher" {
 
 variable "image_sku" {
   type = string
-  default = "20_04-lts"
+  default = "server"
 }
 
 variable "image_name" {
   type = string
-  default = "jenkins-ubuntu"
+  default = "jenkins-ubuntu-v2"
+}
+
+variable "public_ip_sku" {
+  type = string
+  default = "Standard"
 }
 
 variable "os_type" {
@@ -99,6 +113,7 @@ source "azure-arm" "pr-build-and-publish" {
   image_publisher                   = var.image_publisher
   image_offer                       = var.image_offer
   image_sku                         = var.image_sku
+  public_ip_sku                     = var.public_ip_sku
   location                          = var.azure_location
   os_type                           = var.os_type
   ssh_pty                           = "true"
@@ -129,6 +144,7 @@ source "azure-arm" "master-build-and-publish" {
   image_publisher                   = var.image_publisher
   image_offer                       = var.image_offer
   image_sku                         = var.image_sku
+  public_ip_sku                     = var.public_ip_sku
   location                          = var.azure_location
   os_type                           = var.os_type
   ssh_pty                           = "true"

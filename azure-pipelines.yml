@@ -24,6 +24,10 @@ pr:
     include:
       - master
 
+variables:
+  - name: major_minor_version # Major and minor version that will be used for non PR images - matches OS version
+    value: '24.04'
+
 stages:
   - stage: build
     jobs:
@@ -39,10 +43,15 @@ stages:
               scriptType: bash
               scriptLocation: inlineScript
               inlineScript: |
-                AZURE_IMAGE_VERSION=$(az sig image-version list --gallery-image-definition jenkins-ubuntu --gallery-name hmcts --resource-group hmcts-image-gallery-rg --query '[].{name:name}' -o tsv | sort -V | tail -n1)
-                IFS=. read -r major minor patch <<<"$AZURE_IMAGE_VERSION"
-                ((patch++))
-                printf -v AZURE_IMAGE_VERSION '%d.%d.%d' "$major" "$minor" "$((patch))"
+                AZURE_IMAGE_VERSION=$(az sig image-version list --gallery-image-definition jenkins-ubuntu-v2 --gallery-name hmcts --resource-group hmcts-image-gallery-rg --query "[?starts_with(name, '$(major_minor_version).')].{name:name}" -o tsv | sort -V | tail -n1)
+                if [ -z "$AZURE_IMAGE_VERSION" ]; then
+                    AZURE_IMAGE_VERSION="$(major_minor_version).0"
+                else
+                    IFS=. read -r major minor patch <<<"$AZURE_IMAGE_VERSION"
+                    ((patch++))
+                    printf -v AZURE_IMAGE_VERSION '%d.%02d.%d' "$major" "$minor" "$((patch))"
+                fi
+
                 echo $AZURE_IMAGE_VERSION
                 echo "##vso[task.setvariable variable=azure_image_version;isoutput=true]$AZURE_IMAGE_VERSION"
 
@@ -53,8 +62,8 @@ stages:
         strategy:
           matrix:
             Ubuntu-amd64:
-              image_name: 'jenkins-ubuntu'
-              image_sku: 20_04-lts
+              image_name: 'jenkins-ubuntu-v2'
+              image_sku: server
               templatePath: jenkins-agent-ubuntu.pkr.hcl
               vm_size: 'Standard_D4ds_v5'
         timeoutInMinutes: '120'
@@ -92,6 +101,13 @@ stages:
             displayName: 'Install Packer'
             inputs:
               version: 1.9.1
+
+          - task: riezebosch.Packer.Packer.Packer@1
+            displayName: 'Init'
+            inputs:
+              templatePath: $(templatePath)
+              command: init
+              azureSubscription: dts-management-prod-intsvc
 
           - task: riezebosch.Packer.Packer.Packer@1
             displayName: 'Validate'
@@ -146,6 +162,7 @@ stages:
               inlineScript: |
                 KEEP_IMAGE_LABEL=$(curl -s -H "Authorization Bearer $(github-management-api-token)" \
                 https://api.github.com/repos/hmcts/jenkins-packer/issues/$(System.PullRequest.PullRequestNumber)/labels | jq -r '.[] | select(.name == "keep_image")')
+
                 if [ -z "$KEEP_IMAGE_LABEL" ]; then
                   echo "No keep-image label found, deleting image"
                   echo "##vso[task.setvariable variable=delete_image;isOutput=true]true"

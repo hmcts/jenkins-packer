@@ -55,20 +55,22 @@ apt install -y \
   lsb-release
 
 ## debugging why python3-pip sometime can't be found
-cat /etc/apt/sources.list
-apt-cache policy python3-pip
+# cat /etc/apt/sources.list
+# apt-cache policy python3-pip
 ## end debug
 
 install -m 0755 -d /etc/apt/keyrings
 
 echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
-wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
+curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /etc/apt/keyrings/pgdg.gpg
+echo "deb [arch="$ARCHITECTURE" signed-by=/etc/apt/keyrings/pgdg.gpg] http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
 
 curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
-echo "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_VERSION.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list
+echo "deb [arch="$ARCHITECTURE" signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_VERSION.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list
 
-curl https://packages.microsoft.com/keys/microsoft.asc | sudo tee /etc/apt/trusted.gpg.d/microsoft.asc
+curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /etc/apt/keyrings/microsoft-archive-keyring.gpg
 curl "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/prod.list" | sudo tee /etc/apt/sources.list.d/mssql-release.list
+echo "deb [arch="$ARCHITECTURE" signed-by=/etc/apt/keyrings/microsoft-archive-keyring.gpg] https://packages.microsoft.com/ubuntu/$(lsb_release -rs)/prod $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/mssql-release.list
 
 apt update
 apt install -y nodejs
@@ -77,7 +79,7 @@ rm -rf /etc/apt/keyrings/docker.gpg
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
 chmod a+r /etc/apt/keyrings/docker.gpg
 
-echo "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+echo "deb [arch="$ARCHITECTURE" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
 
 curl -sL https://aka.ms/InstallAzureCLIDeb | bash
 
@@ -95,7 +97,7 @@ apt install -y --no-install-recommends gstreamer1.0-libav gstreamer1.0-plugins-b
   libpango-1.0-0 libpng16-16 libsecret-1-0 libsoup2.4-1 libwayland-client0 libwayland-egl1 libwayland-server0 \
   libwebpdemux2 libwoff1 libx11-6 libxcomposite1 libxdamage1 libxkbcommon0 libxml2 libxslt1.1 ffmpeg \
   libcairo-gobject2 libdbus-1-3 libdbus-glib-1-2 libpangocairo-1.0-0 libpangoft2-1.0-0 libx11-xcb1 libxcb-shm0 \
-  libxcb1 libxcursor1 libxext6 libxfixes3 libxi6 libxrender1 libxt6 xvfb fonts-noto-color-emoji ttf-unifont \
+  libxcb1 libxcursor1 libxext6 libxfixes3 libxi6 libxrender1 libxt6 xvfb fonts-noto-color-emoji fonts-unifont \
   libfontconfig xfonts-cyrillic xfonts-scalable fonts-liberation fonts-ipafont-gothic fonts-wqy-zenhei \
   fonts-tlwg-loma-otf
 
@@ -109,7 +111,8 @@ apt install -y \
   python3.10-dev \
   python3-pip \
   python3-testresources \
-  python2 \
+  python3-setuptools \
+  python3-venv \
   lsb-release \
   openjdk-17-jdk \
   git \
@@ -121,13 +124,7 @@ apt install -y \
   build-essential \
   libosmesa6 \
   libosmesa6-dev \
-  libxcursor1 \
-  libxdamage1 \
   libxrandr2 \
-  libpango-1.0-0 \
-  libatk1.0-0 \
-  libatk-bridge2.0-0 \
-  libgtk-3-0 \
   libxss1 \
   rsync \
   libpq-dev \
@@ -145,7 +142,6 @@ apt install -y \
   libreadline-dev \
   libsqlite3-dev \
   llvm \
-  libncursesw5-dev \
   xz-utils \
   tk-dev \
   libxml2-dev \
@@ -157,7 +153,21 @@ apt install -y \
   pdftk-java \
   libreoffice-core \
   libreoffice-writer \
-  ffmpeg
+  ffmpeg \
+  libnss3 \
+  libnspr4 \
+  libgbm1 \
+  libasound2t64 \
+  libpango-1.0-0 \
+  libcups2t64 \
+  libc6 \
+  libexpat1 \
+  libgcc-s1 \
+  libstdc++6 \
+  libxtst6 \
+  libmanette-0.2-0 \
+  libavif16 \
+  xdg-utils
   
 ACCEPT_EULA=Y apt install -y \
   mssql-tools18 \
@@ -179,7 +189,13 @@ mv linux-${ARCHITECTURE}/helm /usr/local/bin/helm
 rm -rf linux-${ARCHITECTURE}
 chmod +x /usr/local/bin/kubectl
 
-pip3 install --upgrade docker-compose pip pip-check pyopenssl setuptools virtualenv
+python3 -m venv /home/packer/venv
+source /home/packer/venv/bin/activate
+
+pip3 install --upgrade pip setuptools wheel
+pip3 install "cython<3.0.0" wheel
+pip3 install "pyyaml==5.4.1" --no-build-isolation
+pip3 install docker-compose pip-check pyopenssl virtualenv
 
 USER=$(whoami)
 
@@ -220,6 +236,21 @@ else
   apt install -y chromium-browser chromium-chromedriver
 fi
 
+# Allow chromium executables under this path to run with AppArmor
+# Required for Puppeteer to work
+export CHROMIUM_BUILD_PATH=/**/chrome
+
+cat | sudo tee /etc/apparmor.d/chrome-dev <<EOF
+abi <abi/4.0>,
+include <tunables/global>
+
+profile chrome-dev $CHROMIUM_BUILD_PATH flags=(unconfined) {
+  userns,
+
+  # Site-specific additions and overrides. See local/README for details.
+  include if exists <local/chrome>
+}
+EOF
 
 curl -fL -o tfcmt.tar.gz https://github.com/suzuki-shunsuke/tfcmt/releases/download/v${TFCMT_VERSION}/tfcmt_linux_${ARCHITECTURE}.tar.gz
 tar -C /usr/bin -xzf ./tfcmt.tar.gz tfcmt
