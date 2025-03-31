@@ -103,6 +103,13 @@ stages:
               version: 1.9.1
 
           - task: riezebosch.Packer.Packer.Packer@1
+            displayName: 'Init'
+            inputs:
+              templatePath: $(templatePath)
+              command: init
+              azureSubscription: dts-management-prod-intsvc
+
+          - task: riezebosch.Packer.Packer.Packer@1
             displayName: 'Validate'
             inputs:
               templatePath: $(templatePath)
