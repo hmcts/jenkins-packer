@@ -79,6 +79,11 @@ variable "image_name" {
   default = "jenkins-ubuntu-v2"
 }
 
+variable "public_ip_sku" {
+  type = string
+  default = "Standard"
+}
+
 variable "os_type" {
   type = string
   default = "Linux"
@@ -99,6 +104,7 @@ source "azure-arm" "pr-build-and-publish" {
   image_publisher                   = var.image_publisher
   image_offer                       = var.image_offer
   image_sku                         = var.image_sku
+  public_ip_sku                     = var.public_ip_sku
   location                          = var.azure_location
   os_type                           = var.os_type
   ssh_pty                           = "true"
@@ -129,6 +135,7 @@ source "azure-arm" "master-build-and-publish" {
   image_publisher                   = var.image_publisher
   image_offer                       = var.image_offer
   image_sku                         = var.image_sku
+  public_ip_sku                     = var.public_ip_sku
   location                          = var.azure_location
   os_type                           = var.os_type
   ssh_pty                           = "true"
