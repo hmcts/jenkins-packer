@@ -99,7 +99,7 @@ apt install -y --no-install-recommends gstreamer1.0-libav gstreamer1.0-plugins-b
   libcairo-gobject2 libdbus-1-3 libdbus-glib-1-2 libpangocairo-1.0-0 libpangoft2-1.0-0 libx11-xcb1 libxcb-shm0 \
   libxcb1 libxcursor1 libxext6 libxfixes3 libxi6 libxrender1 libxt6 xvfb fonts-noto-color-emoji fonts-unifont \
   libfontconfig xfonts-cyrillic xfonts-scalable fonts-liberation fonts-ipafont-gothic fonts-wqy-zenhei \
-  fonts-tlwg-loma-otf
+  fonts-tlwg-loma-otf libgraphene-1.0-0 libgtk-4-1
 
 sleep 10
 
