@@ -111,7 +111,7 @@ stages:
             parameters: 
               azureSubscription: 'DTS-CFTPTL-INTSVC'
               keyVaultName: 'cftptl-intsvc'
-              secretKeyName: 'jenkins-ssh-private-key'
+              secretKeyName: 'jenkinsssh-private-key'
               taskName: 'secret'
 
           - task: riezebosch.Packer.PackerTool.PackerTool@0
