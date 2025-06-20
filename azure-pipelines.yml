@@ -24,6 +24,14 @@ pr:
     include:
       - master
 
+resources:
+  repositories:
+  - repository: azure-devops-templates
+    type: github
+    ref: refs/heads/master
+    name: hmcts/azure-devops-templates
+    endpoint: 'hmcts'
+
 variables:
   - name: major_minor_version # Major and minor version that will be used for non PR images - matches OS version
     value: '24.04'
@@ -86,16 +94,44 @@ stages:
                 az group delete --name $group --yes
                 done
 
-          - task: AzureCLI@2.208.0
-            displayName: Delete published image from previous failure
-            condition: and(succeededOrFailed(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
-            name: delete_failed_pr_image
+          - template: ../templates\Azure\KeyVault\get-secret.yaml
+            parameters: 
+              azureSubscription: 'DTS-CFTPTL-INTSVC'
+              keyVaultName: 'cftptl-intsvc'
+              secretKeyName: 'jenkins-ssh-private-key'
+              taskName: 'secret'
+
+          - task: AzureCLI@2
+            displayName: Get ssh key from key vault
             inputs:
-              azureSubscription: dts-management-prod-intsvc
-              scriptType: bash
-              scriptLocation: inlineScript
+              azureSubscription: ${{ parameters.serviceConnection }}
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
               inlineScript: |
-                az sig image-version delete --gallery-image-version $(System.PullRequest.PullRequestNumber).0.0 --gallery-image-definition $(image_name) --gallery-name hmcts --resource-group hmcts-image-gallery-rg
+                az account set -s ${{ parameters.serviceConnection }}
+                SUB_ID=$(az account show --query id -o tsv)
+                TENANT_ID=$(az account show --query tenantId -o tsv)
+
+                echo $SUB_ID
+                echo "##vso[task.setvariable variable=${{ parameters.subscriptionIdVariableName }}]$SUB_ID"
+                echo $TENANT_ID
+                echo "##vso[task.setvariable variable=${{ parameters.tenantIdVariableName }}]$TENANT_ID"
+
+                FIRST=$(echo $SUB_ID | cut -c 1-8)
+                SECOND=$(echo $SUB_ID | cut -c 25-36)
+                JOINT=c${FIRST}${SECOND}
+                
+                KEY_VAULT=${JOINT}kv
+                STORAGE_ACCOUNT=${JOINT}sa
+
+                echo KeyVault: $KEY_VAULT
+                echo "##vso[task.setvariable variable=${{ parameters.keyVaultVariableName }}]$KEY_VAULT"
+                echo Storage account: $STORAGE_ACCOUNT
+                echo "##vso[task.setvariable variable=${{ parameters.storageAccountVariableName }}]$STORAGE_ACCOUNT"
+
+                lowerCaseEnv=$(echo "${{ parameters.environment }}" | tr "[:upper:]" "[:lower:]")
+                echo "##vso[task.setvariable variable="${{ parameters.envVariableName }}"]$lowerCaseEnv"
+                echo Lower case env: $lowerCaseEnv
 
           - task: riezebosch.Packer.PackerTool.PackerTool@0
             displayName: 'Install Packer'
@@ -125,7 +161,7 @@ stages:
               variables: |
                 azure_image_version=$(System.PullRequest.PullRequestNumber).0.0
                 image_name=$(image_name)
-                jenkins_ssh_key=$(JENKINS_SSH_KEY)
+                jenkins_ssh_key=$(secret.prop.value)
                 image_sku=$(image_sku)
                 vm_size=$(vm_size)
               command: build
@@ -190,7 +226,7 @@ stages:
               variables: |
                 azure_image_version=$(azure_image_version)
                 image_name=$(image_name)
-                jenkins_ssh_key=$(JENKINS_SSH_KEY)
+                jenkins_ssh_key=$(secret.prop.value)
                 image_sku=$(image_sku)
                 vm_size=$(vm_size)
               command: build
