@@ -101,38 +101,6 @@ stages:
               secretKeyName: 'jenkins-ssh-private-key'
               taskName: 'secret'
 
-          - task: AzureCLI@2
-            displayName: Get ssh key from key vault
-            inputs:
-              azureSubscription: ${{ parameters.serviceConnection }}
-              scriptType: 'bash'
-              scriptLocation: 'inlineScript'
-              inlineScript: |
-                az account set -s ${{ parameters.serviceConnection }}
-                SUB_ID=$(az account show --query id -o tsv)
-                TENANT_ID=$(az account show --query tenantId -o tsv)
-
-                echo $SUB_ID
-                echo "##vso[task.setvariable variable=${{ parameters.subscriptionIdVariableName }}]$SUB_ID"
-                echo $TENANT_ID
-                echo "##vso[task.setvariable variable=${{ parameters.tenantIdVariableName }}]$TENANT_ID"
-
-                FIRST=$(echo $SUB_ID | cut -c 1-8)
-                SECOND=$(echo $SUB_ID | cut -c 25-36)
-                JOINT=c${FIRST}${SECOND}
-                
-                KEY_VAULT=${JOINT}kv
-                STORAGE_ACCOUNT=${JOINT}sa
-
-                echo KeyVault: $KEY_VAULT
-                echo "##vso[task.setvariable variable=${{ parameters.keyVaultVariableName }}]$KEY_VAULT"
-                echo Storage account: $STORAGE_ACCOUNT
-                echo "##vso[task.setvariable variable=${{ parameters.storageAccountVariableName }}]$STORAGE_ACCOUNT"
-
-                lowerCaseEnv=$(echo "${{ parameters.environment }}" | tr "[:upper:]" "[:lower:]")
-                echo "##vso[task.setvariable variable="${{ parameters.envVariableName }}"]$lowerCaseEnv"
-                echo Lower case env: $lowerCaseEnv
-
           - task: riezebosch.Packer.PackerTool.PackerTool@0
             displayName: 'Install Packer'
             inputs:
