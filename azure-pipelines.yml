@@ -107,7 +107,7 @@ stages:
 
           - checkout: azure-devops-templates
 
-          - template: templates/Azure/KeyVault/get-secret.yaml
+          - template: templates/Azure/KeyVault/get-secret.yaml@azure-devops-templates
             parameters: 
               azureSubscription: 'DTS-CFTPTL-INTSVC'
               keyVaultName: 'cftptl-intsvc'
