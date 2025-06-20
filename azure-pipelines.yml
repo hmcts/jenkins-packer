@@ -101,6 +101,7 @@ stages:
             displayName: 'Validate bash scripts - no set -e allowed'
             condition: always()
             inputs:
+              targetType: inline
               script: |
                 #!/bin/bash
                 echo "Scanning for 'set -e' variations in bash scripts..."
