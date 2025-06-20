@@ -100,52 +100,52 @@ stages:
           - task: Bash@3
             displayName: 'Validate bash scripts - no set -e allowed'
             condition: always()
-            continueOnError: false
-            script: |
-              #!/bin/bash
-              echo "Scanning for 'set -e' variations in bash scripts..."
-              
-              # Find all bash script files
-              SCRIPT_FILES=$(find . -type f \( -name "*.sh" \) -not -path "./.git/*")
-              
-              if [ -z "$SCRIPT_FILES" ]; then
-                echo "No bash script files found to check"
-                exit 0
-              fi
-              
-              echo "Found bash script files:"
-              echo "$SCRIPT_FILES"
-              echo ""
-              
-              # Check for set -e variations
-              VIOLATIONS_FOUND=false
-              
-              while IFS= read -r file; do
-                echo "Checking: $file"
+            inputs:
+              script: |
+                #!/bin/bash
+                echo "Scanning for 'set -e' variations in bash scripts..."
                 
-                # Look for various set -e patterns
-                MATCHES=$(grep -n -E "^\s*set\s+-(.*e|e.*)" "$file" || true)
+                # Find all bash script files
+                SCRIPT_FILES=$(find . -type f \( -name "*.sh" \) -not -path "./.git/*")
                 
-                if [ -n "$MATCHES" ]; then
-                  echo "❌ VIOLATION FOUND in $file:"
-                  echo "$MATCHES"
-                  echo ""
-                  VIOLATIONS_FOUND=true
-                else
-                  echo "✅ $file - OK"
+                if [ -z "$SCRIPT_FILES" ]; then
+                  echo "No bash script files found to check"
+                  exit 0
                 fi
-              done <<< "$SCRIPT_FILES"
-              
-              if [ "$VIOLATIONS_FOUND" = true ]; then
+                
+                echo "Found bash script files:"
+                echo "$SCRIPT_FILES"
                 echo ""
-                echo "🚨 PIPELINE FAILED: 'set -e' variations detected in bash scripts"
-                echo "This can expose secrets in the pipeline and should only be used for local troubleshooting."
-                echo "Please remove 'set -e', 'set -xe', 'set -ex', etc. from your bash scripts."
-                exit 1
-              else
-                echo ""
-                echo "✅ All bash scripts validated - no 'set -e' variations found"
-              fi
+                
+                # Check for set -e variations
+                VIOLATIONS_FOUND=false
+                
+                while IFS= read -r file; do
+                  echo "Checking: $file"
+                  
+                  # Look for various set -e patterns
+                  MATCHES=$(grep -n -E "^\s*set\s+-(.*e|e.*)" "$file" || true)
+                  
+                  if [ -n "$MATCHES" ]; then
+                    echo "❌ VIOLATION FOUND in $file:"
+                    echo "$MATCHES"
+                    echo ""
+                    VIOLATIONS_FOUND=true
+                  else
+                    echo "✅ $file - OK"
+                  fi
+                done <<< "$SCRIPT_FILES"
+                
+                if [ "$VIOLATIONS_FOUND" = true ]; then
+                  echo ""
+                  echo "🚨 PIPELINE FAILED: 'set -e' variations detected in bash scripts"
+                  echo "This can expose secrets in the pipeline and should only be used for local troubleshooting."
+                  echo "Please remove 'set -e', 'set -xe', 'set -ex', etc. from your bash scripts."
+                  exit 1
+                else
+                  echo ""
+                  echo "✅ All bash scripts validated - no 'set -e' variations found"
+                fi
 
           - task: riezebosch.Packer.PackerTool.PackerTool@0
             displayName: 'Install Packer'
