@@ -24,13 +24,11 @@ export TFENV_VERSION=$(echo v3.0.0 | tr -d 'v')
 #renovate: datasource=github-tags depName=zaproxy/zaproxy
 export ZAP_VERSION=$(echo v2.16.1 | tr -d 'v')
 
-set +x
+set -xe
 
 echo '-----BEGIN RSA PRIVATE KEY-----' | tee /opt/jenkinsssh_id_rsa
 echo $JENKINS_SSH_KEY | sed -e 's/[[:blank:]]\\+/\\n/g' | tee -a /opt/jenkinsssh_id_rsa
 echo '-----END RSA PRIVATE KEY-----' | tee -a /opt/jenkinsssh_id_rsa
-
-set -x
 
 ARCHITECTURE=$(dpkg --print-architecture)
 
