@@ -28,7 +28,7 @@ resources:
   repositories:
   - repository: azure-devops-templates
     type: github
-    ref: refs/heads/master
+    ref: refs/heads/endakelly-patch-1
     name: hmcts/azure-devops-templates
     endpoint: 'hmcts'
 
@@ -72,13 +72,14 @@ stages:
             Ubuntu-amd64:
               image_name: 'jenkins-ubuntu-v2'
               image_sku: server
-              templatePath: jenkins-agent-ubuntu.pkr.hcl
+              templatePath: jenkins-agent-ubuntu.pkr.hcl@self
               vm_size: 'Standard_D4ds_v5'
         timeoutInMinutes: '120'
         variables:
           azure_image_version: $[ dependencies.get_azure_image_version.outputs['get_azure_image_version.azure_image_version'] ]
         steps:
           - checkout: self
+          - checkout: azure-devops-templates
 
           - task: AzureCLI@2.208.0
             displayName: Delete any lingering packer resource groups
@@ -104,8 +105,6 @@ stages:
               scriptLocation: inlineScript
               inlineScript: |
                 az sig image-version delete --gallery-image-version $(System.PullRequest.PullRequestNumber).0.0 --gallery-image-definition $(image_name) --gallery-name hmcts --resource-group hmcts-image-gallery-rg
-
-          - checkout: azure-devops-templates
 
           - template: templates/Azure/KeyVault/get-secret.yaml@azure-devops-templates
             parameters: 
