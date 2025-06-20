@@ -94,6 +94,18 @@ stages:
                 az group delete --name $group --yes
                 done
 
+          - task: AzureCLI@2.208.0
+            displayName: Delete published image from previous failure
+            condition: and(succeededOrFailed(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
+            name: delete_failed_pr_image
+            inputs:
+              azureSubscription: dts-management-prod-intsvc
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                az sig image-version delete --gallery-image-version $(System.PullRequest.PullRequestNumber).0.0 --gallery-image-definition $(image_name) --gallery-name hmcts --resource-group hmcts-image-gallery-rg
+
+
           - template: ../templates\Azure\KeyVault\get-secret.yaml
             parameters: 
               azureSubscription: 'DTS-CFTPTL-INTSVC'
