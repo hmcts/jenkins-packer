@@ -125,7 +125,7 @@ stages:
               variables: |
                 azure_image_version=$(System.PullRequest.PullRequestNumber).0.0
                 image_name=$(image_name)
-                jenkins_ssh_key=$(JENKINS_SSH_KEY)
+                jenkins_ssh_key=$(JENKINS_SSH_KEY:secret)
                 image_sku=$(image_sku)
                 vm_size=$(vm_size)
               command: build
@@ -190,7 +190,7 @@ stages:
               variables: |
                 azure_image_version=$(azure_image_version)
                 image_name=$(image_name)
-                jenkins_ssh_key=$(JENKINS_SSH_KEY)
+                jenkins_ssh_key=$(JENKINS_SSH_KEY:secret)
                 image_sku=$(image_sku)
                 vm_size=$(vm_size)
               command: build
