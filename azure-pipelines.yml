@@ -121,7 +121,7 @@ stages:
           - task: riezebosch.Packer.Packer.Packer@1
             displayName: 'Init'
             inputs:
-              templatePath: $(Build.SourcesDirectory)/$(Build.Repository.Name)/$(templatePath)
+              templatePath: $(Build.SourcesDirectory)/jenkins-packer/$(templatePath)
               command: init
               azureSubscription: dts-management-prod-intsvc
 
