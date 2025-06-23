@@ -103,6 +103,11 @@ variable "vm_size" {
   default = "Standard_D4ds_v5"
 }
 
+variable "script_path" {
+  type = string
+  default = "jenkins-packer"
+}
+
 source "azure-arm" "pr-build-and-publish" {
   azure_tags = {
     imagetype = var.image_name
@@ -168,7 +173,7 @@ build {
 
   provisioner "shell" {
     execute_command = "echo '${var.ssh_password}' | {{ .Vars }} sudo -S -E bash '{{ .Path }}'"
-    script          = "provision-jenkins-ubuntu-agent.sh"
+    script          = "${var.script_path}/provision-jenkins-ubuntu-agent.sh"
     environment_vars = ["JENKINS_SSH_KEY=${var.jenkins_ssh_key}"]
     max_retries = 5
   }
