@@ -72,7 +72,7 @@ stages:
             Ubuntu-amd64:
               image_name: 'jenkins-ubuntu-v2'
               image_sku: server
-              templatePath: jenkins-agent-ubuntu.pkr.hcl@self
+              templatePath: jenkins-agent-ubuntu.pkr.hcl
               vm_size: 'Standard_D4ds_v5'
         timeoutInMinutes: '120'
         variables:
@@ -98,7 +98,7 @@ stages:
           - task: AzureCLI@2.208.0
             displayName: Delete published image from previous failure
             condition: and(succeededOrFailed(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
-            name: delete_failed_pr_image
+            name: delete_failed_pr_image2
             inputs:
               azureSubscription: dts-management-prod-intsvc
               scriptType: bash
@@ -121,7 +121,7 @@ stages:
           - task: riezebosch.Packer.Packer.Packer@1
             displayName: 'Init'
             inputs:
-              templatePath: $(templatePath)
+              templatePath: $(Build.SourcesDirectory)/$(Build.Repository.Name)/$(templatePath)
               command: init
               azureSubscription: dts-management-prod-intsvc
 
