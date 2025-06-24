@@ -28,7 +28,7 @@ resources:
   repositories:
   - repository: azure-devops-templates
     type: github
-    ref: refs/heads/endakelly-patch-1
+    ref: refs/heads/master
     name: hmcts/azure-devops-templates
     endpoint: 'hmcts'
 
