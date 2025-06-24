@@ -24,6 +24,14 @@ pr:
     include:
       - master
 
+resources:
+  repositories:
+  - repository: azure-devops-templates
+    type: github
+    ref: refs/heads/master
+    name: hmcts/azure-devops-templates
+    endpoint: 'hmcts'
+
 variables:
   - name: major_minor_version # Major and minor version that will be used for non PR images - matches OS version
     value: '24.04'
@@ -64,13 +72,14 @@ stages:
             Ubuntu-amd64:
               image_name: 'jenkins-ubuntu-v2'
               image_sku: server
-              templatePath: jenkins-agent-ubuntu.pkr.hcl
+              templatePath: jenkins-packer/jenkins-agent-ubuntu.pkr.hcl
               vm_size: 'Standard_D4ds_v5'
         timeoutInMinutes: '120'
         variables:
           azure_image_version: $[ dependencies.get_azure_image_version.outputs['get_azure_image_version.azure_image_version'] ]
         steps:
           - checkout: self
+          - checkout: azure-devops-templates
 
           - task: AzureCLI@2.208.0
             displayName: Delete any lingering packer resource groups
@@ -96,6 +105,13 @@ stages:
               scriptLocation: inlineScript
               inlineScript: |
                 az sig image-version delete --gallery-image-version $(System.PullRequest.PullRequestNumber).0.0 --gallery-image-definition $(image_name) --gallery-name hmcts --resource-group hmcts-image-gallery-rg
+
+          - template: templates/Azure/KeyVault/get-secret.yaml@azure-devops-templates
+            parameters: 
+              azureSubscription: 'DTS-CFTPTL-INTSVC'
+              keyVaultName: 'cftptl-intsvc'
+              secretKeyName: 'jenkinsssh-private-key'
+              taskName: 'secret'
 
           - task: riezebosch.Packer.PackerTool.PackerTool@0
             displayName: 'Install Packer'
@@ -125,7 +141,7 @@ stages:
               variables: |
                 azure_image_version=$(System.PullRequest.PullRequestNumber).0.0
                 image_name=$(image_name)
-                jenkins_ssh_key=$(JENKINS_SSH_KEY)
+                jenkins_ssh_key=$(secret.prop.value)
                 image_sku=$(image_sku)
                 vm_size=$(vm_size)
               command: build
@@ -190,7 +206,7 @@ stages:
               variables: |
                 azure_image_version=$(azure_image_version)
                 image_name=$(image_name)
-                jenkins_ssh_key=$(JENKINS_SSH_KEY)
+                jenkins_ssh_key=$(secret.prop.value)
                 image_sku=$(image_sku)
                 vm_size=$(vm_size)
               command: build
