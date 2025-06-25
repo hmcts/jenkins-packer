@@ -25,6 +25,7 @@ export TFENV_VERSION=$(echo v3.0.0 | tr -d 'v')
 export ZAP_VERSION=$(echo v2.16.1 | tr -d 'v')
 
 echo $JENKINS_SSH_KEY | sed -e 's/[[:blank:]]\\+/\\n/g' > /opt/jenkinsssh_id_rsa
+#this is a test
 
 # The set -xe command should ALWAYS execute AFTER the ssh key echo. This is to prevent the key being exposed in the logs.
 set -xe
