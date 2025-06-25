@@ -38,9 +38,10 @@ A SSH key is provided to packer to connect to and install on the image.
 
 The SSH key is stored in and read from a keyvault.
 
-If you ever need to regenerate the SSH key being used, update the secret in the keyvault using azure-cli.
+If you ever need to regenerate the SSH key being used, generate a new key and update the secret in the keyvault using azure-cli.
 
 ```
+ssh-keygen -t ed25519 -C "jenkins@hmcts" -f <path-of-your-choosing>
 az keyvault secret set -f <path-to-private-key> --vault-name <keyvault-name> --name jenkinsssh-private-key
 az keyvault secret set -f <path-to-public-key> --vault-name <keyvault-name> --name jenkinsssh-public-key
 ```
