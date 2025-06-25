@@ -31,3 +31,17 @@ Because a lot of github releases use `v` prefixes, we have an `echo` statement p
 ## Testing a new image
 
 When you raise a PR on this repo, it will generate an image using packer. By default the image is deleted after it has been built but if you need to test changes, you can add the `keep_image` label to your PR. This will prevent the image from being deleted during the pipeline and allows you to test the image without the need to merge changes to Master.
+
+## SSH authentication
+
+A SSH key is provided to packer to connect to and install on the image.
+
+The SSH key is stored in and read from a keyvault.
+
+If you ever need to regenerate the SSH key being used, update the secret in the keyvault using azure-cli.
+
+```
+az keyvault secret set -f <path-to-private-key> --vault-name <keyvault-name> --name jenkinsssh-private-key
+az keyvault secret set -f <path-to-public-key> --vault-name <keyvault-name> --name jenkinsssh-public-key
+```
+You can find the keyvault details in `azure-pipelines.yml`
