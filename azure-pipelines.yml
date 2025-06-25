@@ -23,6 +23,11 @@ pr:
   branches:
     include:
       - master
+  paths:
+    include:
+      - azure-pipelines.yaml
+      - jenkins-agent-ubuntu.pkr.hcl
+      - provision-jenkins-ubuntu-agent.sh
 
 resources:
   repositories:
