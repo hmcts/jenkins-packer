@@ -38,11 +38,20 @@ A SSH key is provided to packer to connect to and install on the image.
 
 The SSH key is stored in and read from a keyvault.
 
+To prevent issues with formatting of the key, it is stored in base64 format and must be decrypted by the script at runtime.
+
 If you ever need to regenerate the SSH key being used, generate a new key and update the secret in the keyvault using azure-cli.
 
 ```
 ssh-keygen -t ed25519 -C "jenkins@hmcts" -f <path-of-your-choosing>
-az keyvault secret set -f <path-to-private-key> --vault-name <keyvault-name> --name jenkinsssh-private-key
+export JENKINS_SSH_KEY=$(cat <path-of-your-choosing> | base64)
+az keyvault secret set $JENKINS_SSH_KEY --vault-name <keyvault-name> --name jenkinsssh-private-key
 az keyvault secret set -f <path-to-public-key> --vault-name <keyvault-name> --name jenkinsssh-public-key
 ```
 You can find the keyvault details in `azure-pipelines.yml`
+
+The SSH will not work just yet, you will need to add it to the service account.
+
+Follow the instructions in [ops-runbooks](https://hmcts.github.io/ops-runbooks/azure-pipelines/github-sso.html#which-account-are-pats-created-under) to sign in as that account and add the key to the account under `Settings` > `SSH and GPG Keys` > `New SSH Key`.
+
+Give the key a descriptive name like `Jenkins SSH Key`.
