@@ -5,8 +5,8 @@
 
 #renovate: datasource=github-tags depName=fluxcd/flux2
 export FLUX_VERSION=$(echo v2.6.3 | tr -d 'v')
-#renovate: datasource=github-tags depName=helm/helm
-export HELM_VERSION=$(echo v3.18.3 | tr -d 'v')
+
+export HELM_VERSION=$(echo v3.17.2 | tr -d 'v')
 #renovate: datasource=github-tags depName=kubernetes/kubectl
 export KUBECTL_VERSION=$(echo v1.26.0 | tr -d 'v')
 #renovate: datasource=node-version depName=node versioning=node
