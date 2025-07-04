@@ -10,7 +10,7 @@ export HELM_VERSION=$(echo v3.17.2 | tr -d 'v')
 #renovate: datasource=github-tags depName=kubernetes/kubectl
 export KUBECTL_VERSION=$(echo v1.26.0 | tr -d 'v')
 #renovate: datasource=node-version depName=node versioning=node
-export NODE_VERSION=$(echo 20 | tr -d 'v')
+export NODE_VERSION=$(echo 22 | tr -d 'v')
 #renovate: datasource=github-tags depName=nvm-sh/nvm
 export NVM_VERSION=$(echo v0.40.3 | tr -d 'v')
 #renovate: datasource=github-tags depName=SonarSource/sonar-scanner-cli versioning=regex
