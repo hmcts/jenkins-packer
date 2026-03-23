@@ -71,6 +71,14 @@ curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o 
 curl "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/prod.list" | sudo tee /etc/apt/sources.list.d/mssql-release.list
 echo "deb [arch="$ARCHITECTURE" signed-by=/etc/apt/keyrings/microsoft-archive-keyring.gpg] https://packages.microsoft.com/ubuntu/$(lsb_release -rs)/prod $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/mssql-release.list
 
+if [ "${ARCHITECTURE}" = "amd64" ]; then
+  echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/microsoft-archive-keyring.gpg] https://packages.microsoft.com/repos/edge stable main" | sudo tee /etc/apt/sources.list.d/microsoft-edge.list
+  sudo add-apt-repository -y ppa:mozillateam/ppa
+  echo 'Package: firefox*
+  Pin: release o=LP-PPA-mozillateam
+  Pin-Priority: 501' | sudo tee /etc/apt/preferences.d/mozilla-firefox
+fi
+
 apt update
 apt install -y nodejs
 
@@ -235,6 +243,12 @@ else
   apt install -y chromium-browser chromium-chromedriver
 fi
 
+if [ "${ARCHITECTURE}" = "amd64" ]; then
+  apt update
+  apt install -y microsoft-edge-stable firefox
+  ln -sf /usr/bin/microsoft-edge-stable /usr/bin/microsoft-edge
+fi
+
 # Allow chromium executables under this path to run with AppArmor
 # Required for Puppeteer to work
 export CHROMIUM_BUILD_PATH=/**/chrome
@@ -328,6 +342,10 @@ if [ ${ARCHITECTURE} = "amd64" ]; then
   packages+=('google-chrome')
 else
   packages+=('chromium')
+fi
+
+if [ "${ARCHITECTURE}" = "amd64" ]; then
+  packages+=('microsoft-edge' 'firefox')
 fi
 
 for i in "${packages[@]}"
