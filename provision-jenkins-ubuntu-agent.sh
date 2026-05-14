@@ -158,6 +158,7 @@ apt install -y \
   gettext \
   libncurses-dev \
   pdftk-java \
+  poppler-utils \
   libreoffice-core \
   libreoffice-writer \
   ffmpeg \
