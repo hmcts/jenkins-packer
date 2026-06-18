@@ -21,6 +21,8 @@ export TF_VERSION=$(echo v1.13.2 | tr -d 'v')
 export TFCMT_VERSION=$(echo v4.14.0 | tr -d 'v')
 #renovate: datasource=github-tags depName=tfutils/tfenv
 export TFENV_VERSION=$(echo v3.2.2 | tr -d 'v')
+#renovate: datasource=github-tags depName=astral-sh/uv
+export UV_VERSION=$(echo 0.11.21 | tr -d 'v')
 #renovate: datasource=github-tags depName=zaproxy/zaproxy
 export ZAP_VERSION=$(echo v2.17.0 | tr -d 'v')
 
@@ -337,7 +339,14 @@ curl https://pyenv.run | bash
 ln -s /opt/.pyenv/bin/* /bin
 chown -R 1001:1001 /opt/.pyenv
 
-packages=( az azcopy docker docker-compose eslint gcc git gulp java jq make node npm psql pyenv ruby rsync sonar-scanner terraform tfcmt tfenv virtualenv yarn wget zip )
+curl -LsSf https://astral.sh/uv/${UV_VERSION}/install.sh | UV_INSTALL_DIR=/usr/local/bin sh
+
+mkdir -p /opt/uv/python
+chown -R 1001:1001 /opt/uv
+
+echo 'UV_PYTHON_INSTALL_DIR=/opt/uv/python' >> /etc/environment
+
+packages=( az azcopy docker docker-compose eslint gcc git gulp java jq make node npm psql pyenv ruby rsync sonar-scanner terraform tfcmt tfenv uv virtualenv yarn wget zip )
 
 if [ ${ARCHITECTURE} = "amd64" ]; then
   packages+=('google-chrome')

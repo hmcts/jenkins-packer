@@ -32,6 +32,51 @@ Because a lot of github releases use `v` prefixes, we have an `echo` statement p
 
 When you raise a PR on this repo, it will generate an image using packer. By default the image is deleted after it has been built but if you need to test changes, you can add the `keep_image` label to your PR. This will prevent the image from being deleted during the pipeline and allows you to test the image without the need to merge changes to Master.
 
+To actually run a Jenkins agent on your image and verify your changes, point a **sandbox (ptlsbox)** agent at it and trigger a build:
+
+1. **Keep the image.** Add the `keep_image` label to your PR and let the pipeline finish. It publishes the image to the `hmcts` Azure Compute Gallery (image definition `jenkins-ubuntu-v2`) as version **`<PR-number>.0.0`** — e.g. PR #302 produces `302.0.0`. (Without the label the pipeline deletes the PR image at the end of the run.)
+
+2. **Find your image version.** It's simply your PR number followed by `.0.0`. Confirm it exists in the gallery via the Azure Portal (Compute Gallery → `hmcts` → `jenkins-ubuntu-v2` → Versions) or the CLI:
+
+   ```bash
+   az sig image-version show \
+     --gallery-name hmcts \
+     --gallery-image-definition jenkins-ubuntu-v2 \
+     --resource-group hmcts-image-gallery-rg \
+     --gallery-image-version <PR-number>.0.0 \
+     --subscription <image-gallery-subscription>
+   ```
+
+3. **Pin a sandbox agent to your image** by raising a PR on [`sds-flux-config`](https://github.com/hmcts/sds-flux-config) (see [PR #8566](https://github.com/hmcts/sds-flux-config/pull/8566) as a worked example):
+   - In [`apps/jenkins/jenkins/ptlsbox/jenkins-azure-vm-agent.yaml`](https://github.com/hmcts/sds-flux-config/blob/master/apps/jenkins/jenkins/ptlsbox/jenkins-azure-vm-agent.yaml), set `galleryImageVersion` for the **`cnp-jenkins-builders`** template to your `<PR-number>.0.0`.
+   - In `.github/renovate.json`, temporarily stop Renovate reverting it — add a `packageRule` disabling the agent-image dependency for that file (remove this during cleanup):
+
+     ```json
+     {
+       "matchFileNames": ["apps/jenkins/jenkins/ptlsbox/jenkins-azure-vm-agent.yaml"],
+       "matchPackageNames": ["hmcts/jenkins-packer"],
+       "enabled": false
+     }
+     ```
+
+4. **Merge the flux PR and confirm it applied.** Once Flux reconciles, log into the **ptlsbox cluster** and check the config has your version:
+
+   ```bash
+   kubectl -n jenkins get cm -o yaml | grep -E 'templateName|galleryImageVersion'
+   ```
+
+   You should see `<PR-number>.0.0` against `cnp-jenkins-builders`.
+
+5. **Spin up a fresh agent.** Existing agents keep running the old image, so trigger a sandbox pipeline that uses the `cnp-jenkins-builders` agents — e.g. [`sds-toffee-recipes-service`](https://sds-sandbox-build.hmcts.net/job/HMCTS_Sandbox/job/sds-toffee-recipes-service/). A new agent provisions on your image and appears under **Build Executor Status** (bottom-left of <https://sds-sandbox-build.hmcts.net/>).
+
+6. **Verify on the agent.** Click the new agent's name to open its **Script Console**, then run a check for your change. The console executes on the agent itself, e.g.:
+
+   ```groovy
+   println(["bash","-lc","which uv; uv --version"].execute().text)
+   ```
+
+7. **Clean up when done.** Revert the `sds-flux-config` changes (both the `galleryImageVersion` and the temporary Renovate `packageRule`), then merge your PR on this repo so the change ships in the next release image.
+
 ## SSH authentication
 
 A SSH key is provided to packer to connect to and install on the image.
