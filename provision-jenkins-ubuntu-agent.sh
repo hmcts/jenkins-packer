@@ -22,7 +22,7 @@ export TFCMT_VERSION=$(echo v4.14.0 | tr -d 'v')
 #renovate: datasource=github-tags depName=tfutils/tfenv
 export TFENV_VERSION=$(echo v3.2.2 | tr -d 'v')
 #renovate: datasource=github-tags depName=astral-sh/uv
-export UV_VERSION=$(echo 0.11.29 | tr -d 'v')
+export UV_VERSION=$(echo 0.11.32 | tr -d 'v')
 #renovate: datasource=github-tags depName=zaproxy/zaproxy
 export ZAP_VERSION=$(echo v2.17.0 | tr -d 'v')
 
