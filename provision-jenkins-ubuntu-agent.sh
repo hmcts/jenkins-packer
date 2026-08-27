@@ -9,6 +9,8 @@ export FLUX_VERSION=$(echo v2.6.4 | tr -d 'v')
 export HELM_VERSION=$(echo v3.17.2 | tr -d 'v')
 #renovate: datasource=github-tags depName=kubernetes/kubectl
 export KUBECTL_VERSION=$(echo v1.26.0 | tr -d 'v')
+#renovate: datasource=github-tags depName=yannh/kubeconform
+export KUBECONFORM_VERSION=$(echo v0.6.7 | tr -d 'v')
 #renovate: datasource=node-version depName=node versioning=node
 export NODE_VERSION=$(echo 24 | tr -d 'v')
 #renovate: datasource=github-tags depName=nvm-sh/nvm
@@ -201,6 +203,10 @@ mv linux-${ARCHITECTURE}/helm /usr/local/bin/helm
 rm -rf linux-${ARCHITECTURE}
 chmod +x /usr/local/bin/kubectl
 
+wget https://github.com/yannh/kubeconform/releases/download/v${KUBECONFORM_VERSION}/kubeconform-linux-${ARCHITECTURE}.tar.gz -O - | tar xz
+mv kubeconform /usr/local/bin/kubeconform
+chmod +x /usr/local/bin/kubeconform
+
 python3 -m venv /home/packer/venv
 source /home/packer/venv/bin/activate
 
@@ -348,7 +354,7 @@ chown -R 1001:1001 /opt/uv
 
 echo 'UV_PYTHON_INSTALL_DIR=/opt/uv/python' >> /etc/environment
 
-packages=( az azcopy docker docker-compose eslint gcc git gulp java jq make node npm psql pyenv ruby rsync sonar-scanner terraform tfcmt tfenv uv virtualenv yarn wget zip )
+packages=( az azcopy docker docker-compose eslint gcc git gulp java jq kubeconform make node npm psql pyenv ruby rsync sonar-scanner terraform tfcmt tfenv uv virtualenv yarn wget zip )
 
 if [ ${ARCHITECTURE} = "amd64" ]; then
   packages+=('google-chrome')
