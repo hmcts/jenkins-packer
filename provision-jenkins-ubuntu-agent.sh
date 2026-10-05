@@ -9,6 +9,8 @@ export FLUX_VERSION=$(echo v2.6.4 | tr -d 'v')
 export HELM_VERSION=$(echo v3.17.2 | tr -d 'v')
 #renovate: datasource=github-tags depName=kubernetes/kubectl
 export KUBECTL_VERSION=$(echo v1.26.0 | tr -d 'v')
+#renovate: datasource=github-tags depName=Azure/kubelogin
+export KUBELOGIN_VERSION=$(echo v0.2.20 | tr -d 'v')
 #renovate: datasource=github-tags depName=yannh/kubeconform
 export KUBECONFORM_VERSION=$(echo v0.8.0 | tr -d 'v')
 #renovate: datasource=node-version depName=node versioning=node
@@ -198,6 +200,12 @@ mv flux /usr/local/bin/flux
 
 wget https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/linux/${ARCHITECTURE}/kubectl -O /usr/local/bin/kubectl
 
+wget https://github.com/Azure/kubelogin/releases/download/v${KUBELOGIN_VERSION}/kubelogin-linux-${ARCHITECTURE}.zip -O kubelogin.zip
+unzip -o kubelogin.zip -d kubelogin
+mv kubelogin/bin/linux_${ARCHITECTURE}/kubelogin /usr/local/bin/kubelogin
+rm -rf kubelogin kubelogin.zip
+chmod +x /usr/local/bin/kubelogin
+
 wget https://get.helm.sh/helm-v${HELM_VERSION}-linux-${ARCHITECTURE}.tar.gz -O - | tar xz
 mv linux-${ARCHITECTURE}/helm /usr/local/bin/helm
 rm -rf linux-${ARCHITECTURE}
@@ -354,7 +362,7 @@ chown -R 1001:1001 /opt/uv
 
 echo 'UV_PYTHON_INSTALL_DIR=/opt/uv/python' >> /etc/environment
 
-packages=( az azcopy docker docker-compose eslint gcc git gulp java jq kubeconform make node npm psql pyenv ruby rsync sonar-scanner terraform tfcmt tfenv uv virtualenv yarn wget zip )
+packages=( az azcopy docker docker-compose eslint gcc git gulp java jq kubeconform kubelogin make node npm psql pyenv ruby rsync sonar-scanner terraform tfcmt tfenv uv virtualenv yarn wget zip )
 
 if [ ${ARCHITECTURE} = "amd64" ]; then
   packages+=('google-chrome')
