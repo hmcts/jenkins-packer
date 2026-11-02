@@ -14,7 +14,7 @@ export KUBELOGIN_VERSION=$(echo v0.2.22 | tr -d 'v')
 #renovate: datasource=github-tags depName=yannh/kubeconform
 export KUBECONFORM_VERSION=$(echo v0.8.0 | tr -d 'v')
 #renovate: datasource=node-version depName=node versioning=node
-export NODE_VERSION=$(echo 24 | tr -d 'v')
+export NODE_VERSION=$(echo 26 | tr -d 'v')
 #renovate: datasource=github-tags depName=nvm-sh/nvm
 export NVM_VERSION=$(echo v0.40.8 | tr -d 'v')
 #renovate: datasource=github-tags depName=SonarSource/sonar-scanner-cli versioning=regex
