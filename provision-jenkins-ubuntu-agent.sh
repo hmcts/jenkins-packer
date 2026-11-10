@@ -30,7 +30,7 @@ export UV_VERSION=$(echo 0.13.7 | tr -d 'v')
 #renovate: datasource=github-tags depName=zaproxy/zaproxy
 export ZAP_VERSION=$(echo v2.17.0 | tr -d 'v')
 
-echo $JENKINS_SSH_KEY | base64 -d | sed -e 's/[[:blank:]]\\+/\\n/g' > /opt/jenkinsssh_id_rsa
+# echo $JENKINS_SSH_KEY | base64 -d | sed -e 's/[[:blank:]]\\+/\\n/g' > /opt/jenkinsssh_id_rsa
 
 # The set -xe command should ALWAYS execute AFTER the ssh key echo. This is to prevent the key being exposed in the logs.
 set -xe

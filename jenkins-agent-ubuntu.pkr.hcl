@@ -63,11 +63,6 @@ variable "ssh_password" {
   default = ""
 }
 
-variable "jenkins_ssh_key" {
-  type    = string
-  default = ""
-}
-
 variable "image_offer" {
   type = string
   default = "ubuntu-24_04-lts"
