@@ -30,7 +30,7 @@ export UV_VERSION=$(echo 0.13.7 | tr -d 'v')
 #renovate: datasource=github-tags depName=zaproxy/zaproxy
 export ZAP_VERSION=$(echo v2.17.0 | tr -d 'v')
 
-echo $JENKINS_SSH_KEY | base64 -d | sed -e 's/[[:blank:]]\\+/\\n/g' > /opt/jenkinsssh_id_rsa
+# echo $JENKINS_SSH_KEY | base64 -d | sed -e 's/[[:blank:]]\\+/\\n/g' > /opt/jenkinsssh_id_rsa
 
 # The set -xe command should ALWAYS execute AFTER the ssh key echo. This is to prevent the key being exposed in the logs.
 set -xe
@@ -49,7 +49,7 @@ do
 done
 
 apt autoremove -y
-add-apt-repository ppa:deadsnakes/ppa
+add-apt-repository -y ppa:deadsnakes/ppa
 apt update
 
 apt install -y \
@@ -67,13 +67,13 @@ apt install -y \
 install -m 0755 -d /etc/apt/keyrings
 
 echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
-curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /etc/apt/keyrings/pgdg.gpg
+curl --fail --silent --show-error --location --connect-timeout 30 --max-time 120 https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --batch --yes --dearmor -o /etc/apt/keyrings/pgdg.gpg
 echo "deb [arch="$ARCHITECTURE" signed-by=/etc/apt/keyrings/pgdg.gpg] http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
 
-curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --batch --yes --dearmor -o /etc/apt/keyrings/nodesource.gpg
 echo "deb [arch="$ARCHITECTURE" signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_VERSION.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list
 
-curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /etc/apt/keyrings/microsoft-archive-keyring.gpg
+curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --batch --yes --dearmor -o /etc/apt/keyrings/microsoft-archive-keyring.gpg
 curl "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/prod.list" | sudo tee /etc/apt/sources.list.d/mssql-release.list
 echo "deb [arch="$ARCHITECTURE" signed-by=/etc/apt/keyrings/microsoft-archive-keyring.gpg] https://packages.microsoft.com/ubuntu/$(lsb_release -rs)/prod $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/mssql-release.list
 

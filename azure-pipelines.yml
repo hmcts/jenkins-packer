@@ -79,7 +79,7 @@ stages:
               image_sku: server
               templatePath: jenkins-packer/jenkins-agent-ubuntu.pkr.hcl
               vm_size: 'Standard_D4ds_v5'
-        timeoutInMinutes: '120'
+        timeoutInMinutes: '240'
         variables:
           azure_image_version: $[ dependencies.get_azure_image_version.outputs['get_azure_image_version.azure_image_version'] ]
         steps:
@@ -118,6 +118,13 @@ stages:
               secretKeyName: 'jenkinsssh-private-key'
               taskName: 'secret'
 
+          - task: AzureKeyVault@2
+            displayName: Get Github API token
+            inputs:
+              azureSubscription: dts-management-prod-intsvc
+              KeyVaultName: cftptl-intsvc
+              SecretsFilter: github-management-api-token
+
           - task: riezebosch.Packer.PackerTool.PackerTool@0
             displayName: 'Install Packer'
             inputs:
@@ -129,6 +136,8 @@ stages:
               templatePath: $(templatePath)
               command: init
               azureSubscription: dts-management-prod-intsvc
+            env:
+              PACKER_GITHUB_API_TOKEN: $(github-management-api-token)
 
           - task: riezebosch.Packer.Packer.Packer@1
             displayName: 'Validate'
@@ -146,7 +155,6 @@ stages:
               variables: |
                 azure_image_version=$(System.PullRequest.PullRequestNumber).0.0
                 image_name=$(image_name)
-                jenkins_ssh_key=$(secret.prop.value)
                 image_sku=$(image_sku)
                 vm_size=$(vm_size)
               command: build
@@ -163,14 +171,6 @@ stages:
               inlineScript: |
                 resource_group_name=$(echo $(prbuild.DeploymentName) | sed 's/pkrdp//')
                 az group delete --name "pkr-Resource-Group-${resource_group_name}" --yes
-
-          - task: AzureKeyVault@2
-            displayName: Get Github API token
-            condition: and(succeededOrFailed(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
-            inputs:
-              azureSubscription: dts-management-prod-intsvc
-              KeyVaultName: cftptl-intsvc
-              SecretsFilter: github-management-api-token
 
           - task: AzureCLI@2.208.0
             displayName: Check if PR build image should be kept
