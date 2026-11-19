@@ -63,11 +63,6 @@ variable "ssh_password" {
   default = ""
 }
 
-variable "jenkins_ssh_key" {
-  type    = string
-  default = ""
-}
-
 variable "image_offer" {
   type = string
   default = "ubuntu-24_04-lts"
@@ -174,7 +169,6 @@ build {
   provisioner "shell" {
     execute_command = "echo '${var.ssh_password}' | {{ .Vars }} sudo -S -E bash '{{ .Path }}'"
     script          = "${var.script_path}/provision-jenkins-ubuntu-agent.sh"
-    environment_vars = ["JENKINS_SSH_KEY=${var.jenkins_ssh_key}"]
     max_retries = 5
   }
 
