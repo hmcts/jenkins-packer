@@ -73,12 +73,11 @@ echo "deb [arch="$ARCHITECTURE" signed-by=/etc/apt/keyrings/pgdg.gpg] http://apt
 curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
 echo "deb [arch="$ARCHITECTURE" signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_VERSION.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list
 
-curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /etc/apt/keyrings/microsoft-archive-keyring.gpg
-curl "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/prod.list" | sudo tee /etc/apt/sources.list.d/mssql-release.list
-echo "deb [arch="$ARCHITECTURE" signed-by=/etc/apt/keyrings/microsoft-archive-keyring.gpg] https://packages.microsoft.com/ubuntu/$(lsb_release -rs)/prod $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/mssql-release.list
+curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor --yes -o /usr/share/keyrings/microsoft-prod.gpg
+echo "deb [arch="$ARCHITECTURE" signed-by=/usr/share/keyrings/microsoft-prod.gpg] https://packages.microsoft.com/ubuntu/$(lsb_release -rs)/prod $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/microsoft-prod.list
 
 if [ "${ARCHITECTURE}" = "amd64" ]; then
-  echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/microsoft-archive-keyring.gpg] https://packages.microsoft.com/repos/edge stable main" | sudo tee /etc/apt/sources.list.d/microsoft-edge.list
+  echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-prod.gpg] https://packages.microsoft.com/repos/edge stable main" | sudo tee /etc/apt/sources.list.d/microsoft-edge.list
   sudo add-apt-repository -y ppa:mozillateam/ppa
   echo 'Package: firefox*
   Pin: release o=LP-PPA-mozillateam
@@ -385,6 +384,11 @@ do
       echo "${i} is installed"
     fi
 done
+
+if ! apt-get update; then
+  echo "apt-get update failed on the final image. Check /etc/apt/sources.list.d for conflicting entries"
+  exit 1
+fi
 
 printf "Package installed via pip are listed below with their versions\n"
 pip-check
